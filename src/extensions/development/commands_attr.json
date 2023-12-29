@@ -1,0 +1,7 @@
+{
+    "reload": {
+        "help": "Reload an extension",
+        "brief": "Reload an extension",
+        "aliases": ["r"]
+    }
+}

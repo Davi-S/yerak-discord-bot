@@ -1,0 +1,7 @@
+{
+    "ping": {
+        "help": "Shows the latency of the bot. It is the time it takes for data to be transmitted from a device to a server and back to the device again. It is measured in milliseconds (ms)",
+        "brief": "The bot's latency",
+        "aliases": ["latency"]
+    }
+}
