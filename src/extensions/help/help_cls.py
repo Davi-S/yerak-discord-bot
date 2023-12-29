@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 
+# TODO: fix these embeds
 
 class MyHelp(commands.HelpCommand):
     def __init__(self, **kwargs) -> None:
