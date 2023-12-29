@@ -66,7 +66,10 @@ class ErrorHandler(commands.Cog):
 
         for developer_id in settings.developers_ids:
             if user := await self.bot.fetch_user(int(developer_id)):
-                await user.send(embed=embed)
+                try:
+                    await user.send(embed=embed)
+                except discord.errors.Forbidden:
+                    pass
 
     async def _handle_NotAuthorizedUser(self, ctx: commands.Context, error: commands.CommandError) -> None:
         logger.warning(f'User "{ctx.author.name}" with id "{ctx.author.id}" tried to use the command "{ctx.command.name}"')

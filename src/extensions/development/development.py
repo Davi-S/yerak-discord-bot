@@ -18,7 +18,7 @@ _commands_attributes = read_commands_attributes(THIS_FOLDER/'commands_attr.json'
 get_command_attributes = get_command_attributes_builder(_commands_attributes)
 
 
-class Development(commands.Cog, command_attrs=dict(hidden=True)):
+class Development(commands.GroupCog, command_attrs=dict(hidden=True)):
     """Useful commands for developers"""
 
     def __init__(self, bot: BotYerak):
@@ -29,7 +29,7 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
             # Raise an error so it will not proceed with the command execution
             raise custom_errors.NotAuthorizedUser('Some user tried to execute a developer\'s command')
 
-    @commands.command(**get_command_attributes('reload'))
+    @commands.hybrid_command(**get_command_attributes('reload'))
     async def reload(self, ctx: commands.Context, *, extension: str) -> None:
         extension = extension.lower()
         try:
