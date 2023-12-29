@@ -3,7 +3,10 @@
         ",",
         "."
     ],
-    "developers_ids": [
+    "users_developers_ids": [
         759027058613026827
+    ],
+    "guilds_developers_ids": [
+        1186855491813523536
     ]
 }

@@ -25,7 +25,7 @@ class Development(commands.GroupCog, command_attrs=dict(hidden=True)):
         self.bot = bot
 
     async def cog_before_invoke(self, ctx: commands.Context) -> None:
-        if ctx.author.id not in settings.developers_ids:
+        if ctx.author.id not in settings.users_developers_ids:
             # Raise an error so it will not proceed with the command execution
             raise custom_errors.NotAuthorizedUser('Some user tried to execute a developer\'s command')
 
