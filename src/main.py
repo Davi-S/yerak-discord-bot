@@ -23,16 +23,9 @@ async def main() -> int:
     async with by.BotYerak(
         command_prefix=commands.when_mentioned_or(*settings.prefixes),
         help_command=commands.MinimalHelpCommand(),
-        intents=discord.Intents.all()
+        intents=discord.Intents.all(),
+        initial_extensions=extensions.get_extensions_names()
     ) as bot:
-
-        # Dynamically load extensions
-        for extension in extensions.get_extensions_name():
-            try:
-                await bot.load_extension(f'extensions.{extension}')
-                logger.info(f'Extension "{extension}" loaded successfully')
-            except Exception as error:
-                logger.error(f'Error while loading the extension "{extension}". {error}')
         await bot.start(settings.token)
 
 if __name__ == '__main__':
