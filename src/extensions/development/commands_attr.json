@@ -8,5 +8,10 @@
         "help": "Sync the bot's slash command",
         "brief": "Sync the bot's slash command",
         "aliases": ["s"]
+    },
+    "close": {
+        "help": "Closes the bot connection",
+        "brief": "Closes the bot connection",
+        "aliases": ["c"]
     }
 }
