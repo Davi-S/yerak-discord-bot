@@ -18,7 +18,7 @@ _commands_attributes = read_commands_attributes(THIS_FOLDER/'commands_attr.json'
 get_command_attributes = get_command_attributes_builder(_commands_attributes)
 
 
-class Development(commands.GroupCog, command_attrs=dict(hidden=True)):
+class Development(commands.Cog, command_attrs=dict(hidden=True)):
     """Useful commands for developers"""
 
     def __init__(self, bot: BotYerak):
