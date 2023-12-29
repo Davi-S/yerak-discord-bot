@@ -18,7 +18,7 @@ _commands_attributes = read_commands_attributes(THIS_FOLDER/'commands_attr.json'
 get_command_attributes = get_command_attributes_builder(_commands_attributes)
 
 
-class Development(commands.Cog, command_attrs=dict(hidden=True)):
+class Development(commands.GroupCog, command_attrs=dict(hidden=True)):
     """Useful commands for developers"""
 
     def __init__(self, bot: BotYerak):
@@ -39,3 +39,8 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
         except Exception as error:
             await ctx.reply(f'Failed to reload the extension "{extension}" due to error: {error}')
             logger.error(f'Failed to reload the extension "{extension}" due to error: {error}')
+
+    @commands.command(**get_command_attributes('sync'))
+    async def sync(self, ctx: commands.Context) -> None:
+        synced = await self.bot.tree.sync()
+        await ctx.reply(f'Synced {len(synced)} commands successfully.')

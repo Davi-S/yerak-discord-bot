@@ -20,12 +20,10 @@ logger = logging.getLogger(__name__)
 
 
 async def main() -> int:
-    intents = discord.Intents.default()
-    intents.message_content = True
     async with by.BotYerak(
         command_prefix=commands.when_mentioned_or(*settings.prefixes),
         help_command=commands.MinimalHelpCommand(),
-        intents=intents
+        intents=discord.Intents.all()
     ) as bot:
 
         # Dynamically load extensions

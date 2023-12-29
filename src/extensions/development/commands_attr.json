@@ -3,5 +3,10 @@
         "help": "Reload an extension",
         "brief": "Reload an extension",
         "aliases": ["r"]
+    },
+    "sync": {
+        "help": "Sync the bot's slash command",
+        "brief": "Sync the bot's slash command",
+        "aliases": ["s"]
     }
 }

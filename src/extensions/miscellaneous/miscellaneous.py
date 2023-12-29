@@ -16,12 +16,16 @@ _commands_attributes = read_commands_attributes(THIS_FOLDER/'commands_attr.json'
 get_command_attributes = get_command_attributes_builder(_commands_attributes)
 
 
-class Miscellaneous(commands.Cog):
+class Miscellaneous(commands.GroupCog):
     """Commands that do not fit any other category"""
 
     def __init__(self, bot: BotYerak) -> None:
         self.bot = bot
 
-    @commands.command(**get_command_attributes('ping'))
+    @commands.hybrid_command(**get_command_attributes('ping'))
     async def ping(self, ctx: commands.Context) -> None:
         await ctx.reply(f'Pong! -> {int(self.bot.latency * 1000)}ms')
+        
+    @commands.hybrid_command(**get_command_attributes('hello'))
+    async def hello(self, ctx: commands.Context) -> None:
+        await ctx.send(f'Hi, {ctx.author.mention}')
