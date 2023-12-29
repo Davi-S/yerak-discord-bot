@@ -44,6 +44,13 @@ class MyHelp(commands.HelpCommand):
             available_commands = self.get_bot_mapping()[None]
         cog_name = cog.qualified_name if cog else self.no_category_qualified_name
         
+        # Do not how hidden cogs.
+        # Send error message
+        if len(available_commands) == 0:
+            error = await self.command_not_found(cog_name)
+            await self.send_error_message(error)
+            return 
+            
         embed = self.get_embed()
         embed.title = self.embed_title(cog_name) + ' category'
         embed.description = (f'Total of **{len(available_commands)}** commands in this category')
@@ -57,6 +64,12 @@ class MyHelp(commands.HelpCommand):
         await self.send(embed=embed)
 
     async def send_command_help(self, command: commands.Command) -> None:
+        # Do not show hidden commands
+        if command.hidden:
+            error = await self.command_not_found(command.qualified_name)
+            await self.send_error_message(error)
+            return
+        
         embed = self.get_embed()
         embed.title = self.embed_title(command.qualified_name) + ' command'
         embed.description = command.help
@@ -86,7 +99,7 @@ class MyHelp(commands.HelpCommand):
         if string == self.no_category_qualified_name:
             await self.send_cog_help(None)
             return self.no_category_qualified_name
-        return super().command_not_found(string)
+        return f'No command or category called "{string}" found.'
     
     # OWN METHODS BELLOW #
     async def send(self, *args, **kwargs) -> None:
