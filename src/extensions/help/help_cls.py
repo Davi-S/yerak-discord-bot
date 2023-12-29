@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 
-# TODO: fix these embeds
 
 class MyHelp(commands.HelpCommand):
     def __init__(self, **kwargs) -> None:
@@ -43,14 +42,14 @@ class MyHelp(commands.HelpCommand):
         else:
             available_commands = self.get_bot_mapping()[None]
         cog_name = cog.qualified_name if cog else self.no_category_qualified_name
-        
+
         # Do not how hidden cogs.
         # Send error message
         if len(available_commands) == 0:
             error = await self.command_not_found(cog_name)
             await self.send_error_message(error)
-            return 
-            
+            return
+
         embed = self.get_embed()
         embed.title = self.embed_title(cog_name) + ' category'
         embed.description = (f'Total of **{len(available_commands)}** commands in this category')
@@ -69,7 +68,7 @@ class MyHelp(commands.HelpCommand):
             error = await self.command_not_found(command.qualified_name)
             await self.send_error_message(error)
             return
-        
+
         embed = self.get_embed()
         embed.title = self.embed_title(command.qualified_name) + ' command'
         embed.description = command.help
@@ -100,7 +99,7 @@ class MyHelp(commands.HelpCommand):
             await self.send_cog_help(None)
             return self.no_category_qualified_name
         return f'No command or category called "{string}" found.'
-    
+
     # OWN METHODS BELLOW #
     async def send(self, *args, **kwargs) -> None:
         await self.context.message.reply(*args, **kwargs)
@@ -110,9 +109,9 @@ class MyHelp(commands.HelpCommand):
         prefixes[0] = f'@{self.context.bot.get_user(int(prefixes[0][3:-2])).name} '
         return prefixes
 
-    def get_embed(self):
-        return discord.Embed(color=self.color_hex) 
-    
+    def get_embed(self) -> discord.Embed:
+        return discord.Embed(color=self.color_hex)
+
     def embed_title(self, topic: str = '') -> str:
         return 'Yerak\'s help' if not topic else f'Yerak\'s help on "{topic}"'
 

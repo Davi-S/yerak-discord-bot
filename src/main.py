@@ -29,4 +29,5 @@ async def main() -> int:
         await bot.start(settings.token)
 
 if __name__ == '__main__':
+    logger.info('Running main function')
     asyncio.run(main())
