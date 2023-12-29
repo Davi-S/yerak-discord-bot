@@ -43,4 +43,9 @@ class Development(commands.GroupCog, command_attrs=dict(hidden=True)):
     @commands.command(**get_command_attributes('sync'))
     async def sync(self, ctx: commands.Context) -> None:
         synced = await self.bot.tree.sync()
-        await ctx.reply(f'Synced {len(synced)} commands successfully.')
+        await ctx.reply(f'Synced {len(synced)} commands successfully')
+        
+    @commands.command(**get_command_attributes('close'))
+    async def close(self, ctx: commands.Context) -> None:
+        await ctx.reply(f'Closing bot')
+        await self.bot.close()
