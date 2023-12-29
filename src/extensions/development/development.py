@@ -29,7 +29,7 @@ class Development(commands.GroupCog, command_attrs=dict(hidden=True)):
             # Raise an error so it will not proceed with the command execution
             raise custom_errors.NotAuthorizedUser('Some user tried to execute a developer\'s command')
 
-    @commands.hybrid_command(**get_command_attributes('reload'))
+    @commands.command(**get_command_attributes('reload'))
     async def reload(self, ctx: commands.Context, *, extension: str) -> None:
         extension = extension.lower()
         try:
@@ -39,3 +39,8 @@ class Development(commands.GroupCog, command_attrs=dict(hidden=True)):
         except Exception as error:
             await ctx.reply(f'Failed to reload the extension "{extension}" due to error: {error}')
             logger.error(f'Failed to reload the extension "{extension}" due to error: {error}')
+
+    @commands.command(**get_command_attributes('sync'))
+    async def sync(self, ctx: commands.Context) -> None:
+        synced = await self.bot.tree.sync()
+        await ctx.reply(f'Synced {len(synced)} commands successfully.')
