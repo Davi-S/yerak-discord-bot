@@ -64,7 +64,7 @@ class ErrorHandler(commands.Cog):
         for key, value in error_message.items():
             embed.add_field(name=key, value=value, inline=False)
 
-        for developer_id in settings.developers_ids:
+        for developer_id in settings.users_developers_ids:
             if user := await self.bot.fetch_user(int(developer_id)):
                 try:
                     await user.send(embed=embed)

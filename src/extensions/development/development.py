@@ -25,7 +25,7 @@ class Development(commands.GroupCog, command_attrs=dict(hidden=True)):
         self.bot = bot
 
     async def cog_before_invoke(self, ctx: commands.Context) -> None:
-        if ctx.author.id not in settings.developers_ids:
+        if ctx.author.id not in settings.users_developers_ids:
             # Raise an error so it will not proceed with the command execution
             raise custom_errors.NotAuthorizedUser('Some user tried to execute a developer\'s command')
 
@@ -43,4 +43,9 @@ class Development(commands.GroupCog, command_attrs=dict(hidden=True)):
     @commands.command(**get_command_attributes('sync'))
     async def sync(self, ctx: commands.Context) -> None:
         synced = await self.bot.tree.sync()
-        await ctx.reply(f'Synced {len(synced)} commands successfully.')
+        await ctx.reply(f'Synced {len(synced)} commands successfully')
+        
+    @commands.command(**get_command_attributes('close'))
+    async def close(self, ctx: commands.Context) -> None:
+        await ctx.reply(f'Closing bot')
+        await self.bot.close()

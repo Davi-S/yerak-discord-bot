@@ -5,7 +5,7 @@ from pathlib import Path
 THIS_FOLDER = Path(__file__).parent
 
 
-def get_extensions_name():
+def get_extensions_names():
     return [x.name for x in THIS_FOLDER.iterdir() if x.is_dir() and x.name != '__pycache__']
 
 
