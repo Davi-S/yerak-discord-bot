@@ -6,7 +6,7 @@ from .help_cls import MyHelp
 
 
 class Help(commands.Cog):
-    """Just the a place for the help command"""
+    """The a place for the help command"""
 
     def __init__(self, bot: BotYerak):
         self.bot = bot
