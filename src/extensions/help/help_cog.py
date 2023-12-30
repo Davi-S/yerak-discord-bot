@@ -23,7 +23,7 @@ class Help(commands.Cog):
         self.bot.help_command.cog = self
 
     @app_commands.command(description=_help_command_attrs['help'])
-    async def help(self, interaction: discord.Interaction, *, on: str = None):
+    async def help(self, interaction: discord.Interaction, on: str = None):
         context = await self.bot.get_context(interaction)
         await self.bot.help_command.command_callback(context, command=on)
 
