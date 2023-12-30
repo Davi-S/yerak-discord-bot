@@ -30,15 +30,22 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
             raise custom_errors.NotAuthorizedUser('Some user tried to execute a developer\'s command')
 
     @commands.command(**get_command_attributes('reload'))
-    async def reload(self, ctx: commands.Context, *, extension: str) -> None:
-        extension = extension.lower()
-        try:
-            await self.bot.reload_extension(f'extensions.{extension}')
-            await ctx.reply(f'Extension {extension} reloaded successfully')
-            logger.info(f'Extension "{extension}" reloaded successfully')
-        except Exception as error:
-            await ctx.reply(f'Failed to reload the extension "{extension}" due to error: {error}')
-            logger.error(f'Failed to reload the extension "{extension}" due to error: {error}')
+    async def reload(self, ctx: commands.Context, *extensions: str) -> None:
+        to_reload = [ext.split('.')[-1] for ext in self.bot.extensions.keys()] if extensions[0] == 'all' else extensions
+        success = []
+        fail = []
+        for extension in to_reload:
+            try:
+                await self.bot.reload_extension(f'extensions.{extension}')
+                success.append(extension)
+                logger.info(f'Extension "{extension}" reloaded successfully')
+            except Exception as error:
+                fail.append(extension)
+                logger.error(f'Failed to reload the extension "{extension}" due to error: {error}')
+        
+        success_message = f'Extension(s): "{", ".join(success)}" reloaded successfully' if success else ''
+        failure_message = f'Failed to reload the extension(s): "{", ".join(fail)}"' if fail else ''
+        await ctx.reply(success_message + failure_message)
 
     @commands.command(**get_command_attributes('sync'))
     async def sync(self, ctx: commands.Context) -> None:
