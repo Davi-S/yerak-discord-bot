@@ -8,10 +8,12 @@ class MyHelp(commands.HelpCommand):
         self.no_category_qualified_name = 'Other'
         self.no_category_description = 'Other commands'
         self.color_hex = 0x175639
-        kwargs['command_attrs'] = {
-            "help": "Display information about available categories, commands and other useful information",
-            "brief": "Show a help message",
-        }
+        
+    async def prepare_help_command(self, ctx: commands.Context, command: str) -> None:
+        """Prepare the help command before it does anything"""
+        # Setting the context for Interaction based calls. In these interactions the context is not set automatically
+        if not self.context:
+            self.context = ctx
 
     async def send_bot_help(self, mapping: dict[commands.Cog | None, list[commands.Command]]) -> None:
         # Get categories (cogs)
@@ -102,7 +104,7 @@ class MyHelp(commands.HelpCommand):
 
     # OWN METHODS BELLOW #
     async def send(self, *args, **kwargs) -> None:
-        await self.context.message.reply(*args, **kwargs)
+        await self.context.reply(*args, **kwargs)
 
     def prefixes(self) -> list[str]:
         prefixes = self.context.bot.command_prefix(self.context.bot, self.context.message)[1:]
