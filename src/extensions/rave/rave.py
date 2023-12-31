@@ -37,7 +37,7 @@ class Rave(commands.GroupCog):
     # TODO: do not let two raves at the same time
     # TODO: stop all raves and delete roles before exiting of unloading the cog
     # TODO: check how the rave behaves in different guilds
-
+    # TODO: handle errors in the tasks from one function
     def __init__(self, bot: BotYerak) -> None:
         self.bot = bot
         self.role_name = "Yerak's Raver"
@@ -46,11 +46,13 @@ class Rave(commands.GroupCog):
     @commands.hybrid_command(**get_command_attributes('pause'))
     async def pause(self, ctx: commands.Context) -> None:
         self.stop_tasks()
+        await ctx.reply('Rave paused')
 
     @commands.hybrid_command(**get_command_attributes('stop'))
     async def stop(self, ctx: commands.Context) -> None:
         self.stop_tasks()
         await self.delete_roles(ctx, all=True)
+        await ctx.reply('Rave stopped')
 
     @commands.hybrid_command(**get_command_attributes('hue_cycle'))
     async def hue_cycle(self, ctx: commands.Context,
@@ -63,6 +65,7 @@ class Rave(commands.GroupCog):
         await self.apply_all_roles(roles, members or ctx.guild.members)
         self.hue_cycle_task.change_interval(seconds=speed)
         self.hue_cycle_task.start(ctx, roles[0].id, step)
+        await ctx.reply('Hue Cycle rave started')
 
     @tasks.loop(seconds=1)
     async def hue_cycle_task(self, ctx: commands.Context, role_id: int, step: float = 0.01):
@@ -87,17 +90,18 @@ class Rave(commands.GroupCog):
     @commands.hybrid_command(**get_command_attributes('crazy'))
     async def crazy(self, ctx: commands.Context,
         amount: int = commands.parameter(default=3, description='How much different colors at the same time'),
-        speed: float = commands.parameter(default=3.0, description='The time between each color change in seconds'),
+        speed: float = commands.parameter(default=4.0, description='The time between each color change in seconds'),
         *,
         members: list[discord.Member] | None = commands.parameter(converter=MemberListConverter, default=None, description='The members that will receive the rave role. Default is everyone that can')
     ) -> None:
         roles = await self.get_roles(ctx, amount)
         await self.apply_even_roles(roles, members or ctx.guild.members)
         self.crazy_task.change_interval(seconds=speed)
-        self.crazy_task.start(ctx, roles)
+        self.crazy_task.start(roles)
+        await ctx.reply('Crazy rave started')
         
-    @tasks.loop(seconds=3)
-    async def crazy_task(self, ctx: commands.Context, roles: list[discord.Role]):
+    @tasks.loop(seconds=4)
+    async def crazy_task(self, roles: list[discord.Role]):
         for role in roles:
             color_hsv = (random.random(), 0.8, 0.8)
             await role.edit(color=discord.Color.from_hsv(*color_hsv))
