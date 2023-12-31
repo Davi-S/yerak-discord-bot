@@ -73,6 +73,12 @@ class Rave(commands.GroupCog):
         # increment the hue cycling to the beginning if it gets to the max value
         new_color = ((role_color_hsv[0] + step) % 1.0, role_color_hsv[1], role_color_hsv[2])
         await role.edit(color=discord.Color.from_hsv(*new_color))
+        
+    @hue_cycle_task.error
+    async def on_error_hue_cycle_task(self, error: discord.DiscordException):
+        # In case the role is deleted while the task is running
+        if isinstance(error, AttributeError):
+            pass
 
     async def create_roles(self, ctx: commands.Context, amount: int) -> list[discord.Role]:
         # Create new roles
