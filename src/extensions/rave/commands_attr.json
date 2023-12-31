@@ -1,0 +1,16 @@
+{
+    "pause": {
+        "help": "Pauses the rave. Useful to make modifications on it. The rave can be continued again calling its command with the new arguments.",
+        "brief": "Pauses the rave"
+    },
+    "stop": {
+        "help": "Stops the rave and delete all rave roles",
+        "brief": "Stops the rave"
+    },
+    "hue_cycle": {
+        "name": "hue-cycle",
+        "help": "Starts a 'Hue Cycle' rave. Needs one role. The role will have its hue (color) changed in a cycle periodically",
+        "brief": "Starts a 'Hue Cycle' rave",
+        "aliases": ["rhc", "hue_cycle"]
+    }
+}
