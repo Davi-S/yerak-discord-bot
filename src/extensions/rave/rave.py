@@ -18,6 +18,18 @@ _commands_attributes = read_commands_attributes(THIS_FOLDER/'commands_attr.json'
 get_command_attributes = get_command_attributes_builder(_commands_attributes)
 
 
+class MemberListConverter(commands.Converter):
+    async def convert(self, ctx, argument):
+        member_mentions = [mention for mention in argument.split(' ')]
+        members = []
+        for mention in member_mentions:
+            try:
+                member = await commands.MemberConverter().convert(ctx, mention)
+                members.append(member)
+            except commands.errors.BadArgument:
+                pass  # Ignore if the mention is not a valid member
+        return members
+
 class Rave(commands.GroupCog):
     """Light up the server"""
     # TODO: do not let two raves at the same time
@@ -46,15 +58,20 @@ class Rave(commands.GroupCog):
         self.stop_tasks()
         await self.delete_roles(ctx, all=True)
 
-    @commands.hybrid_command(**get_command_attributes('hc'))
-    async def hc(self, ctx: commands.Context, step: float = 0.01, speed: float = 1.0) -> None:
+    @commands.hybrid_command(**get_command_attributes('hue_cycle'))
+    async def hue_cycle(self, ctx: commands.Context,
+        step: float = commands.parameter(default=0.01, description='How much the color will change each time. Goes from 0 to 1'),
+        speed: float = commands.parameter(default=1.0, description='The time between each color change in seconds'),
+        *,
+        members: list[discord.Member] | None = commands.parameter(converter=MemberListConverter, default=None, description='The members that will receive the rave role. Default is everyone that can')
+    ) -> None:
         roles = await self.get_roles(ctx, 1)
-        await self.apply_roles(roles, ctx.guild.members)
-        self.hue_cycling_task.change_interval(seconds=speed)
-        self.hue_cycling_task.start(roles[0], step)
+        await self.apply_roles(roles, members or ctx.guild.members)
+        self.hue_cycle_task.change_interval(seconds=speed)
+        self.hue_cycle_task.start(roles[0], step)
 
     @tasks.loop(seconds=1)
-    async def hue_cycling_task(self, role: discord.Role, step: float = 0.01):
+    async def hue_cycle_task(self, role: discord.Role, step: float = 0.01):
         role_color_hsv = colorsys.rgb_to_hsv(*[component / 255.0 for component in role.color.to_rgb()])
         # Check if the role has no initial color and ive some arbitrary HSV color
         if role_color_hsv == (0, 0, 0):
