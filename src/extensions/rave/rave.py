@@ -22,12 +22,48 @@ class Rave(commands.GroupCog):
     """Light up the server"""
     # TODO: do not let two raves at the same time
     # TODO: stop all raves and delete roles before exiting of unloading the cog
+    # TODO: check how the rave behaves in different guilds
 
     def __init__(self, bot: BotYerak) -> None:
         self.bot = bot
         self.role_name = "Yerak's Raver"
+        self.tasks = self.get_tasks()
 
-    async def create_roles(self, ctx: commands.Context, amount: int):
+    @commands.hybrid_command(**get_command_attributes('create'))
+    async def create(self, ctx: commands.Context) -> None:
+        await self.create_roles(ctx, 6)
+
+    @commands.hybrid_command(**get_command_attributes('delete'))
+    async def delete(self, ctx: commands.Context) -> None:
+        await self.delete_roles(ctx, all=True)
+
+    @commands.hybrid_command(**get_command_attributes('pause'))
+    async def pause(self, ctx: commands.Context) -> None:
+        self.stop_tasks()
+
+    @commands.hybrid_command(**get_command_attributes('stop'))
+    async def stop(self, ctx: commands.Context) -> None:
+        self.stop_tasks()
+        await self.delete_roles(ctx, all=True)
+
+    @commands.hybrid_command(**get_command_attributes('hc'))
+    async def hc(self, ctx: commands.Context, step: float = 0.01, speed: float = 1.0) -> None:
+        roles = await self.get_roles(ctx, 1)
+        await self.apply_roles(roles, ctx.guild.members)
+        self.hue_cycling_task.change_interval(seconds=speed)
+        self.hue_cycling_task.start(roles[0], step)
+
+    @tasks.loop(seconds=1)
+    async def hue_cycling_task(self, role: discord.Role, step: float = 0.01):
+        role_color_hsv = colorsys.rgb_to_hsv(*[component / 255.0 for component in role.color.to_rgb()])
+        # Check if the role has no initial color and ive some arbitrary HSV color
+        if role_color_hsv == (0, 0, 0):
+            role_color_hsv = (0.5, 0.8, 0.8)
+        # increment the hue cycling to the beginning if it gets to the max value
+        new_color = ((role_color_hsv[0] + step) % 1.0, role_color_hsv[1], role_color_hsv[2])
+        await role.edit(color=discord.Color.from_hsv(*new_color))
+
+    async def create_roles(self, ctx: commands.Context, amount: int) -> list[discord.Role]:
         # Create new roles
         created_roles = []
         for _ in range(amount):
@@ -45,54 +81,44 @@ class Rave(commands.GroupCog):
                 found = True
                 for idx, created_role in enumerate(created_roles, start=1):
                     roles_positions[created_role] = position - idx
-
-            elif role.name == self.role_name:
+            elif self.is_rave_role(role):
                 break
             elif found:
                 roles_positions[role] = position - amount
-        roles_positions = dict(
-            sorted(roles_positions.items(), key=lambda x: x[1]))
-
+        roles_positions = dict(sorted(roles_positions.items(), key=lambda x: x[1]))
         await ctx.guild.edit_role_positions(positions=roles_positions)
-
         return created_roles
 
-    async def delete_roles(self, ctx: commands.Context, amount: int = 1, all=False):
+    async def delete_roles(self, ctx: commands.Context, amount: int = 1, all=False) -> None:
         deleted = 0
         for role in ctx.guild.roles:
-            if role.name == self.role_name and ((deleted < amount) or (all)):
+            if self.is_rave_role(role) and ((deleted < amount) or (all)):
                 await role.delete()
                 deleted += 1
 
-    @commands.hybrid_command(**get_command_attributes('create'))
-    async def create(self, ctx: commands.Context) -> None:
-        await self.create_roles(ctx, 6)
+    async def get_roles(self, ctx: commands.Context, amount: int) -> list[discord.Role]:
+        existing_roles = [role for role in ctx.guild.roles if self.is_rave_role(role)]
+        if (existing_roles_amount := len(existing_roles)) < amount:
+            existing_roles.extend(await self.create_roles(ctx, amount-existing_roles_amount))
+        return existing_roles[:amount]
 
-    @commands.hybrid_command(**get_command_attributes('delete'))
-    async def delete(self, ctx: commands.Context) -> None:
-        await self.delete_roles(ctx, all=True)
+    async def apply_roles(self, roles: list[discord.Role], members: list[discord.Member]) -> None:
+        for member in members:
+            await member.add_roles(*roles)
 
-    @commands.hybrid_command(**get_command_attributes('stop'))
-    async def stop(self, ctx: commands.Context) -> None:
-        self.hue_cycling.stop()
+    def is_rave_role(self, role: discord.Role) -> bool:
+        return role.name == self.role_name
 
-    @commands.hybrid_command(**get_command_attributes('simple'))
-    async def simple(self, ctx: commands.Context, step: float = 0.01, speed: float = 1.0) -> None:
-        # TODO: try to get a existing role or create a new one
-        # roles = await self.create_roles(ctx, 1)
-        role = next(
-            role for role in ctx.guild.roles if role.name == self.role_name)
-        self.hue_cycling.change_interval(seconds=speed)
-        self.hue_cycling.start(role, step)
+    def get_tasks(self) -> tuple[tasks.Loop]:
+        tasks_list = []
+        for attr in dir(self):
+            if attr.endswith('_task'):
+                task = getattr(self, attr)
+                if isinstance(task, tasks.Loop):
+                    tasks_list.append(task)
+        return tuple(tasks_list)
 
-    @tasks.loop(seconds=10)
-    async def hue_cycling(self, role: discord.Role, step: float = 0.01):
-        role_color_hsv = colorsys.rgb_to_hsv(
-            *[component / 255.0 for component in role.color.to_rgb()])
-        # Check if the role has no initial color and ive some arbitrary HSV color
-        if role_color_hsv == (0, 0, 0):
-            role_color_hsv = (0.5, 0.8, 0.8)
-        # increment the hue cycling to the beginning if it gets to the max value
-        new_color = ((role_color_hsv[0] + step) %
-                     1.0, role_color_hsv[1], role_color_hsv[2])
-        await role.edit(color=discord.Color.from_hsv(*new_color))
+    def stop_tasks(self) -> None:
+        for task in self.tasks:
+            if task.is_running():
+                task.stop()
