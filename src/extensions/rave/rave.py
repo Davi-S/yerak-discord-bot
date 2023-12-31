@@ -71,3 +71,28 @@ class Rave(commands.GroupCog):
     @commands.hybrid_command(**get_command_attributes('delete'))
     async def delete(self, ctx: commands.Context) -> None:
         await self.delete_roles(ctx, all=True)
+
+    @commands.hybrid_command(**get_command_attributes('stop'))
+    async def stop(self, ctx: commands.Context) -> None:
+        self.hue_cycling.stop()
+
+    @commands.hybrid_command(**get_command_attributes('simple'))
+    async def simple(self, ctx: commands.Context, step: float = 0.01, speed: float = 1.0) -> None:
+        # TODO: try to get a existing role or create a new one
+        # roles = await self.create_roles(ctx, 1)
+        role = next(
+            role for role in ctx.guild.roles if role.name == self.role_name)
+        self.hue_cycling.change_interval(seconds=speed)
+        self.hue_cycling.start(role, step)
+
+    @tasks.loop(seconds=10)
+    async def hue_cycling(self, role: discord.Role, step: float = 0.01):
+        role_color_hsv = colorsys.rgb_to_hsv(
+            *[component / 255.0 for component in role.color.to_rgb()])
+        # Check if the role has no initial color and ive some arbitrary HSV color
+        if role_color_hsv == (0, 0, 0):
+            role_color_hsv = (0.5, 0.8, 0.8)
+        # increment the hue cycling to the beginning if it gets to the max value
+        new_color = ((role_color_hsv[0] + step) %
+                     1.0, role_color_hsv[1], role_color_hsv[2])
+        await role.edit(color=discord.Color.from_hsv(*new_color))
