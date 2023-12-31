@@ -60,10 +60,12 @@ class Rave(commands.GroupCog):
         roles = await self.get_roles(ctx, 1)
         await self.apply_roles(roles, members or ctx.guild.members)
         self.hue_cycle_task.change_interval(seconds=speed)
-        self.hue_cycle_task.start(roles[0], step)
+        self.hue_cycle_task.start(ctx, roles[0].id, step)
 
     @tasks.loop(seconds=1)
-    async def hue_cycle_task(self, role: discord.Role, step: float = 0.01):
+    async def hue_cycle_task(self, ctx: commands.Context, role_id: int, step: float = 0.01):
+        # get the role every time to get the latest color
+        role = ctx.guild.get_role(role_id)
         role_color_hsv = colorsys.rgb_to_hsv(*[component / 255.0 for component in role.color.to_rgb()])
         # Check if the role has no initial color and give some arbitrary HSV color
         if role_color_hsv == (0, 0, 0):
