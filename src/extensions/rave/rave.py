@@ -41,14 +41,6 @@ class Rave(commands.GroupCog):
         self.role_name = "Yerak's Raver"
         self.tasks = self.get_tasks()
 
-    @commands.hybrid_command(**get_command_attributes('create'))
-    async def create(self, ctx: commands.Context) -> None:
-        await self.create_roles(ctx, 6)
-
-    @commands.hybrid_command(**get_command_attributes('delete'))
-    async def delete(self, ctx: commands.Context) -> None:
-        await self.delete_roles(ctx, all=True)
-
     @commands.hybrid_command(**get_command_attributes('pause'))
     async def pause(self, ctx: commands.Context) -> None:
         self.stop_tasks()
@@ -73,7 +65,7 @@ class Rave(commands.GroupCog):
     @tasks.loop(seconds=1)
     async def hue_cycle_task(self, role: discord.Role, step: float = 0.01):
         role_color_hsv = colorsys.rgb_to_hsv(*[component / 255.0 for component in role.color.to_rgb()])
-        # Check if the role has no initial color and ive some arbitrary HSV color
+        # Check if the role has no initial color and give some arbitrary HSV color
         if role_color_hsv == (0, 0, 0):
             role_color_hsv = (0.5, 0.8, 0.8)
         # increment the hue cycling to the beginning if it gets to the max value
