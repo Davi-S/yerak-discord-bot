@@ -77,7 +77,7 @@ class Rave(commands.GroupCog):
     @hue_cycle_task.error
     async def on_error_hue_cycle_task(self, error: discord.DiscordException):
         # In case the role is deleted while the task is running
-        if isinstance(error, AttributeError):
+        if isinstance(error, (AttributeError, discord.errors.NotFound)):
             pass
         else:
             logger.error(f'Error on the hue_cycle_task: {error}')
