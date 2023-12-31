@@ -79,6 +79,8 @@ class Rave(commands.GroupCog):
         # In case the role is deleted while the task is running
         if isinstance(error, AttributeError):
             pass
+        else:
+            logger.error(f'Error on the hue_cycle_task: {error}')
 
     async def create_roles(self, ctx: commands.Context, amount: int) -> list[discord.Role]:
         # Create new roles
