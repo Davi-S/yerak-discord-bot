@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 THIS_FOLDER = Path(__file__).parent
 
 
-_commands_attributes = read_commands_attributes(THIS_FOLDER/'commands_attr.json')  # Global cache for config data
+_commands_attributes = read_commands_attributes(
+    THIS_FOLDER/'commands_attr.json')  # Global cache for config data
 get_command_attributes = get_command_attributes_builder(_commands_attributes)
 
 
@@ -35,7 +36,7 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
         action = 'reload'
         result = await self.manage_extensions(to_reload, action)
         await ctx.reply(self._format_extensions_message(result, action))
-        
+
     @commands.command(**get_command_attributes('load'))
     async def load(self, ctx: commands.Context, *extensions: str) -> None:
         action = 'load'
@@ -53,14 +54,13 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
         synced = await self.bot.tree.sync()
         await ctx.reply(f'Synced {len(synced)} commands successfully')
         logger.info(f'Synced {len(synced)} commands successfully')
-        
+
     @commands.command(**get_command_attributes('close'))
     async def close(self, ctx: commands.Context) -> None:
         await ctx.reply(f'Closing bot')
         logger.info(f'Closing bot')
         await self.bot.close()
-        
-        
+
     async def manage_extensions(self, extensions: list[str], action: str) -> dict[str, list]:
         success = []
         fail = []
@@ -74,7 +74,7 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
         if extension_action is None:
             logger.error('Failed to manage extensions due to invalid action')
             raise ValueError('Failed to manage extensions due to invalid action')
-        
+
         for extension in extensions:
             try:
                 await extension_action(f'extensions.{extension}')
@@ -83,9 +83,9 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
             except commands.ExtensionError as error:
                 fail.append((extension, error))
                 logger.error(f'Failed to {action} the extension "{extension}" due to error: {error}')
-                
+
         return {'success': success, 'fail': fail}
-    
+
     def _format_extensions_message(self, action: str, result: dict[str, list]) -> str:
         success_message = f'Extension(s): "{", ".join(result["success"])}" {action}ed successfully' if result["success"] else ''
         failure_message = f'Failed to {action} the extension(s): "{", ".join([f"{fail[0]} -> {fail[1]}" for fail in result["fail"]])}"' if result["fail"] else ''
