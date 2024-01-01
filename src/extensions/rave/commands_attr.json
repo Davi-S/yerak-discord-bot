@@ -12,5 +12,10 @@
         "help": "Starts a 'Hue Cycle' rave. Needs one role. The role will have its hue (color) changed in a cycle periodically",
         "brief": "Starts a 'Hue Cycle' rave",
         "aliases": ["rhc", "hue_cycle"]
+    },
+    "crazy": {
+        "help": "Starts a 'Crazy' rave. A certain amount of roles will change their color to a random value periodically",
+        "brief": "Starts a 'Crazy' rave",
+        "aliases": ["rc"]
     }
 }
