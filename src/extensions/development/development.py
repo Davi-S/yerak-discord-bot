@@ -86,7 +86,7 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
 
         return {'success': success, 'fail': fail}
 
-    def _format_extensions_message(self, action: str, result: dict[str, list]) -> str:
+    def _format_extensions_message(self, result: dict[str, list], action: str) -> str:
         success_message = f'Extension(s): "{", ".join(result["success"])}" {action}ed successfully' if result["success"] else ''
         failure_message = f'Failed to {action} the extension(s): "{", ".join([f"{fail[0]} -> {fail[1]}" for fail in result["fail"]])}"' if result["fail"] else ''
         return success_message + failure_message
