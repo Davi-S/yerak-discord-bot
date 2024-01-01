@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from settings import settings
 
 
 class MyHelp(commands.HelpCommand):
@@ -40,11 +41,15 @@ class MyHelp(commands.HelpCommand):
 
     async def send_cog_help(self, cog: commands.Cog) -> None:
         if cog:
-            available_commands = await self.filter_commands(cog.get_commands())
+            # Check for developers
+            if self.context.author.id not in settings.users_developers_ids:
+                available_commands = await self.filter_commands(cog.get_commands(), sort=True)
+            else:
+                available_commands = sorted(cog.get_commands(), key=lambda x: x.name)
         else:
             available_commands = self.get_bot_mapping()[None]
         cog_name = cog.qualified_name if cog else self.no_category_qualified_name
-        cog_long_description = cog.long_description or ''
+        cog_long_description = getattr(cog, 'long_description', None) or ''
 
         # Do not how hidden cogs.
         # Send error message
@@ -66,8 +71,8 @@ class MyHelp(commands.HelpCommand):
         await self.send(embed=embed)
 
     async def send_command_help(self, command: commands.Command) -> None:
-        # Do not show hidden commands
-        if command.hidden:
+        # Do not show hidden commands if the author is not a developer
+        if command.hidden and (self.context.author.id not in settings.users_developers_ids):
             error = await self.command_not_found(command.qualified_name)
             await self.send_error_message(error)
             return
@@ -75,7 +80,6 @@ class MyHelp(commands.HelpCommand):
         embed = self.get_embed()
         embed.title = self.embed_title(command.qualified_name) + ' command'
         embed.description = command.help
-        # TODO: add command parameters field
         for key, value in self.get_command_attributes(command).items():
             embed.add_field(
                 name=key,
@@ -125,7 +129,18 @@ class MyHelp(commands.HelpCommand):
 
     def get_command_attributes(self, command: commands.Command) -> dict:
         return {
-            'Usage': f'<prefix>{command.name} {command.signature}',
+            'Usage': f'- <prefix>{command.name} {command.signature}\n{self.get_command_parameters(command)}',
             'Aliases': ', '.join(command.aliases) or 'No aliases',
             'Category': self.no_category_qualified_name if not command.cog else command.cog.qualified_name,
         }
+        
+    def get_command_parameters(self, command: commands.Command) -> str:
+        parameters = []
+        for name, param in command.params.items():            
+            info = f'`{name}`\n'
+            if param.default is not param.empty:
+                info += f'default: {param.displayed_default}\n'
+            if param.description:
+                info += f'description: {param.description}\n'
+            parameters.append(info)
+        return '\n'.join(parameters) if parameters else ''
