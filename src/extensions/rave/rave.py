@@ -36,16 +36,16 @@ class Rave(commands.GroupCog):
     """Light up the server"""
     long_description = (
     """Create top hierarchy roles and change their color dynamically, making the server very animated.
-    Every rave has a 10 minutes timeout"""
+    Every rave has an 8 minutes timeout"""
     )
     # TODO: do not let two raves at the same time
     # TODO: check how the rave behaves in different guilds
     def __init__(self, bot: BotYerak) -> None:
         self.bot = bot
         self.role_name = "Yerak's Raver"
-        self.timeout = 600  # 600 seconds equals to 10 minutes
+        self.timeout = 480  # 480 seconds equals to 8 minutes
         self.tasks = self.get_tasks()
-        self.setup_tasks_error_handler()
+        self.setup_tasks()
 
     @commands.hybrid_command(**get_command_attributes('pause'))
     async def pause(self, ctx: commands.Context) -> None:
@@ -183,7 +183,17 @@ class Rave(commands.GroupCog):
             pass
         else:
             logger.error(f'Error on a task: {error}')
+            
+    async def on_tasks_before_loop(self, _):
+        # Because this function is not being set by a decorator, it receives two "self" arguments when called. Using the "_" to ignore the second "self" argument
+        logger.info('Task started')
+        
+    async def on_tasks_after_loop(self, _):
+        # Because this function is not being set by a decorator, it receives two "self" arguments when called. Using the "_" to ignore the second "self" argument
+        logger.info('task stopped')
     
-    def setup_tasks_error_handler(self):
+    def setup_tasks(self):
         for task in self.tasks:
             task.error(self.on_tasks_error)
+            task.before_loop(self.on_tasks_before_loop)
+            task.after_loop(self.on_tasks_after_loop)
