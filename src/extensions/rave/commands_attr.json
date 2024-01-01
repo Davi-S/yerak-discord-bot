@@ -9,7 +9,7 @@
     },
     "hue_cycle": {
         "name": "hue-cycle",
-        "help": "Starts a 'Hue Cycle' rave. Needs one role. The role will have its hue (color) changed in a cycle periodically",
+        "help": "Starts a 'Hue Cycle' rave. Needs one role. The role will have its color changed in a cycle periodically",
         "brief": "Starts a 'Hue Cycle' rave",
         "aliases": ["rhc", "hue_cycle"]
     },
