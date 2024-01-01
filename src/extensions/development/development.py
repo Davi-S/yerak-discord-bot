@@ -14,8 +14,7 @@ logger = logging.getLogger(__name__)
 THIS_FOLDER = Path(__file__).parent
 
 
-_commands_attributes = read_commands_attributes(
-    THIS_FOLDER/'commands_attr.json')  # Global cache for config data
+_commands_attributes = read_commands_attributes(THIS_FOLDER/'commands_attr.json')  # Global cache for config data
 get_command_attributes = get_command_attributes_builder(_commands_attributes)
 
 
