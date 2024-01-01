@@ -186,11 +186,11 @@ class Rave(commands.GroupCog):
             
     async def on_tasks_before_loop(self, _):
         # Because this function is not being set by a decorator, it receives two "self" arguments when called. Using the "_" to ignore the second "self" argument
-        logger.info('Task started')
+        logger.debug('Task started')
         
     async def on_tasks_after_loop(self, _):
         # Because this function is not being set by a decorator, it receives two "self" arguments when called. Using the "_" to ignore the second "self" argument
-        logger.info('task stopped')
+        logger.debug('task stopped')
     
     def setup_tasks(self):
         for task in self.tasks:
