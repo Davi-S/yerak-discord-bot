@@ -63,7 +63,7 @@ class Rave(commands.GroupCog):
         step: float = commands.parameter(default=0.01, description='How much the color will change each time. Goes from 0 to 1'),
         speed: float = commands.parameter(default=1.0, description='The time between each color change in seconds'),
         *,
-        members: list[discord.Member] | None = commands.parameter(converter=MemberListConverter, default=None, description='The members that will receive the rave role. Default is everyone that can')
+        members: list[discord.Member] | None = commands.parameter(converter=MemberListConverter, default=None, displayed_default='everyone', description='The members that will receive the rave role')
     ) -> None:
         # Prepare roles
         roles = await self.get_roles(ctx, 1)
@@ -91,7 +91,7 @@ class Rave(commands.GroupCog):
         amount: int = commands.parameter(default=3, description='How much different colors at the same time'),
         speed: float = commands.parameter(default=4.0, description='The time between each color change in seconds'),
         *,
-        members: list[discord.Member] | None = commands.parameter(converter=MemberListConverter, default=None, description='The members that will receive the rave role. Default is everyone that can')
+        members: list[discord.Member] | None = commands.parameter(converter=MemberListConverter, default=None, displayed_default='everyone', description='The members that will receive the rave role. Default is everyone that can')
     ) -> None:
         # Prepare roles
         roles = await self.get_roles(ctx, amount)

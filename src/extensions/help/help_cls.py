@@ -80,7 +80,6 @@ class MyHelp(commands.HelpCommand):
         embed = self.get_embed()
         embed.title = self.embed_title(command.qualified_name) + ' command'
         embed.description = command.help
-        # TODO: add command parameters field
         for key, value in self.get_command_attributes(command).items():
             embed.add_field(
                 name=key,
@@ -130,7 +129,18 @@ class MyHelp(commands.HelpCommand):
 
     def get_command_attributes(self, command: commands.Command) -> dict:
         return {
-            'Usage': f'<prefix>{command.name} {command.signature}',
+            'Usage': f'- <prefix>{command.name} {command.signature}\n{self.get_command_parameters(command)}',
             'Aliases': ', '.join(command.aliases) or 'No aliases',
             'Category': self.no_category_qualified_name if not command.cog else command.cog.qualified_name,
         }
+        
+    def get_command_parameters(self, command: commands.Command) -> str:
+        parameters = []
+        for name, param in command.params.items():            
+            info = f'`{name}`\n'
+            if param.default is not param.empty:
+                info += f'default: {param.displayed_default}\n'
+            if param.description:
+                info += f'description: {param.description}\n'
+            parameters.append(info)
+        return '\n'.join(parameters) if parameters else ''
