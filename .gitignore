@@ -153,3 +153,5 @@ cython_debug/
 
 .vscode/
 todo.txt
+
+src/settings/.secrets.toml

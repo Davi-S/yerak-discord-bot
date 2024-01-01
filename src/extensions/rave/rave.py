@@ -1,5 +1,7 @@
 import colorsys
+import itertools
 import logging
+import random
 from pathlib import Path
 
 import discord
@@ -20,35 +22,36 @@ get_command_attributes = get_command_attributes_builder(_commands_attributes)
 
 class MemberListConverter(commands.Converter):
     async def convert(self, ctx, argument):
-        member_mentions = [mention for mention in argument.split(' ')]
         members = []
-        for mention in member_mentions:
+        for mention in argument.split(' '):
             try:
                 member = await commands.MemberConverter().convert(ctx, mention)
                 members.append(member)
             except commands.errors.BadArgument:
-                pass  # Ignore if the mention is not a valid member
+                # Ignore if the mention is not a valid member
+                pass  
         return members
 
 class Rave(commands.GroupCog):
     """Light up the server"""
     # TODO: do not let two raves at the same time
-    # TODO: stop all raves and delete roles before exiting of unloading the cog
     # TODO: check how the rave behaves in different guilds
-
     def __init__(self, bot: BotYerak) -> None:
         self.bot = bot
         self.role_name = "Yerak's Raver"
         self.tasks = self.get_tasks()
+        self.setup_tasks_error_handler()
 
     @commands.hybrid_command(**get_command_attributes('pause'))
     async def pause(self, ctx: commands.Context) -> None:
         self.stop_tasks()
+        await ctx.reply('Rave paused')
 
     @commands.hybrid_command(**get_command_attributes('stop'))
     async def stop(self, ctx: commands.Context) -> None:
         self.stop_tasks()
         await self.delete_roles(ctx, all=True)
+        await ctx.reply('Rave stopped')
 
     @commands.hybrid_command(**get_command_attributes('hue_cycle'))
     async def hue_cycle(self, ctx: commands.Context,
@@ -58,9 +61,10 @@ class Rave(commands.GroupCog):
         members: list[discord.Member] | None = commands.parameter(converter=MemberListConverter, default=None, description='The members that will receive the rave role. Default is everyone that can')
     ) -> None:
         roles = await self.get_roles(ctx, 1)
-        await self.apply_roles(roles, members or ctx.guild.members)
+        await self.apply_all_roles(roles, members or ctx.guild.members)
         self.hue_cycle_task.change_interval(seconds=speed)
         self.hue_cycle_task.start(ctx, roles[0].id, step)
+        await ctx.reply('Hue Cycle rave started')
 
     @tasks.loop(seconds=1)
     async def hue_cycle_task(self, ctx: commands.Context, role_id: int, step: float = 0.01):
@@ -73,15 +77,26 @@ class Rave(commands.GroupCog):
         # increment the hue cycling to the beginning if it gets to the max value
         new_color = ((role_color_hsv[0] + step) % 1.0, role_color_hsv[1], role_color_hsv[2])
         await role.edit(color=discord.Color.from_hsv(*new_color))
+            
+    @commands.hybrid_command(**get_command_attributes('crazy'))
+    async def crazy(self, ctx: commands.Context,
+        amount: int = commands.parameter(default=3, description='How much different colors at the same time'),
+        speed: float = commands.parameter(default=4.0, description='The time between each color change in seconds'),
+        *,
+        members: list[discord.Member] | None = commands.parameter(converter=MemberListConverter, default=None, description='The members that will receive the rave role. Default is everyone that can')
+    ) -> None:
+        roles = await self.get_roles(ctx, amount)
+        await self.apply_even_roles(roles, members or ctx.guild.members)
+        self.crazy_task.change_interval(seconds=speed)
+        self.crazy_task.start(roles)
+        await ctx.reply('Crazy rave started')
         
-    @hue_cycle_task.error
-    async def on_error_hue_cycle_task(self, error: discord.DiscordException):
-        # In case the role is deleted while the task is running
-        if isinstance(error, AttributeError):
-            pass
-        else:
-            logger.error(f'Error on the hue_cycle_task: {error}')
-
+    @tasks.loop(seconds=4)
+    async def crazy_task(self, roles: list[discord.Role]):
+        for role in roles:
+            color_hsv = (random.random(), 0.8, 0.8)
+            await role.edit(color=discord.Color.from_hsv(*color_hsv))
+            
     async def create_roles(self, ctx: commands.Context, amount: int) -> list[discord.Role]:
         # Create new roles
         created_roles = []
@@ -121,9 +136,14 @@ class Rave(commands.GroupCog):
             existing_roles.extend(await self.create_roles(ctx, amount-existing_roles_amount))
         return existing_roles[:amount]
 
-    async def apply_roles(self, roles: list[discord.Role], members: list[discord.Member]) -> None:
+    async def apply_all_roles(self, roles: list[discord.Role], members: list[discord.Member]) -> None:
         for member in members:
             await member.add_roles(*roles)
+            
+    async def apply_even_roles(self, roles: list[discord.Role], members: list[discord.Member]) -> None:
+        roles_cycle = itertools.cycle(roles)
+        for member in members:
+            await member.add_roles(next(roles_cycle))
 
     def is_rave_role(self, role: discord.Role) -> bool:
         return role.name == self.role_name
@@ -141,3 +161,18 @@ class Rave(commands.GroupCog):
         for task in self.tasks:
             if task.is_running():
                 task.stop()
+    
+    def cog_unload(self):
+        self.stop_tasks()
+    
+    async def on_tasks_error(self, _, error: discord.DiscordException):
+        # Because this function is not being set by a decorator, it receives two "self" arguments when called. Using the "_" to ignore the second "self" argument
+        # In case the role is deleted while the task is running
+        if isinstance(error, (AttributeError, discord.errors.NotFound)):
+            pass
+        else:
+            logger.error(f'Error on a task: {error}')
+    
+    def setup_tasks_error_handler(self):
+        for task in self.tasks:
+            task.error(self.on_tasks_error)
