@@ -4,6 +4,16 @@
         "brief": "Reload an extension",
         "aliases": ["r"]
     },
+    "load": {
+        "help": "Load an extension",
+        "brief": "Load an extension",
+        "aliases": ["l"]
+    },
+    "unload": {
+        "help": "Unload an extension",
+        "brief": "Unload an extension",
+        "aliases": ["u"]
+    },
     "sync": {
         "help": "Sync the bot's slash command",
         "brief": "Sync the bot's slash command",

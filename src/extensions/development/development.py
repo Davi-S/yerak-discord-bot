@@ -32,19 +32,26 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
     @commands.command(**get_command_attributes('reload'))
     async def reload(self, ctx: commands.Context, *extensions: str) -> None:
         to_reload = [ext.split('.')[-1] for ext in self.bot.extensions.keys()] if extensions[0] == 'all' else extensions
-        success = []
-        fail = []
-        for extension in to_reload:
-            try:
-                await self.bot.reload_extension(f'extensions.{extension}')
-                success.append(extension)
-                logger.info(f'Extension "{extension}" reloaded successfully')
-            except Exception as error:
-                fail.append(extension)
-                logger.error(f'Failed to reload the extension "{extension}" due to error: {error}')
+        result = await self.manage_extensions(to_reload, 'reload')
         
-        success_message = f'Extension(s): "{", ".join(success)}" reloaded successfully' if success else ''
-        failure_message = f'Failed to reload the extension(s): "{", ".join(fail)}"' if fail else ''
+        success_message = f'Extension(s): "{", ".join(result["success"])}" reloaded successfully' if result["success"] else ''
+        failure_message = f'Failed to reload the extension(s): "{", ".join([f"{fail[0]} -> {fail[1]}" for fail in result["fail"]])}"' if result["fail"] else ''
+        await ctx.reply(success_message + failure_message)
+        
+    @commands.command(**get_command_attributes('load'))
+    async def load(self, ctx: commands.Context, *extensions: str) -> None:
+        result = await self.manage_extensions(extensions, 'load')
+        
+        success_message = f'Extension(s): "{", ".join(result["success"])}" loaded successfully' if result["success"] else ''
+        failure_message = f'Failed to load the extension(s): "{", ".join([f"{fail[0]} -> {fail[1]}" for fail in result["fail"]])}"' if result["fail"] else ''
+        await ctx.reply(success_message + failure_message)
+
+    @commands.command(**get_command_attributes('unload'))
+    async def unload(self, ctx: commands.Context, *extensions: str) -> None:
+        result = await self.manage_extensions(extensions, 'unload')
+        
+        success_message = f'Extension(s): "{", ".join(result["success"])}" unloaded successfully' if result["success"] else ''
+        failure_message = f'Failed to unload the extension(s): "{", ".join([f"{fail[0]} -> {fail[1]}" for fail in result["fail"]])}"' if result["fail"] else ''
         await ctx.reply(success_message + failure_message)
 
     @commands.command(**get_command_attributes('sync'))
@@ -57,4 +64,30 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
     async def close(self, ctx: commands.Context) -> None:
         await ctx.reply(f'Closing bot')
         logger.info(f'Closing bot')
-        await self.bot.close()
+        
+        
+    async def manage_extensions(self, extensions: list[str], action: str) -> dict[str, list]:
+        success = []
+        fail = []
+        action_mapping = {
+            'unload': self.bot.unload_extension,
+            'load': self.bot.load_extension,
+            'reload': self.bot.reload_extension,
+        }
+
+        extension_action = action_mapping.get(action)
+        if extension_action is None:
+            logger.error('Failed to manage extensions due to invalid action')
+            raise ValueError('Failed to manage extensions due to invalid action')
+        
+        for extension in extensions:
+            try:
+                await extension_action(f'extensions.{extension}')
+                success.append(extension)
+                logger.info(f'Extension "{extension}" {action}ed successfully')
+            except commands.ExtensionError as error:
+                fail.append((extension, error))
+                logger.error(f'Failed to {action} the extension "{extension}" due to error: {error}')
+                
+        return {'success': success, 'fail': fail}
+    
