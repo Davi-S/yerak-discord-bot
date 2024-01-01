@@ -30,20 +30,29 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
             raise custom_errors.NotAuthorizedUser('Some user tried to execute a developer\'s command')
 
     @commands.command(**get_command_attributes('reload'))
-    async def reload(self, ctx: commands.Context, *extensions: str) -> None:
-        to_reload = [ext.split('.')[-1] for ext in self.bot.extensions.keys()] if extensions[0] == 'all' else extensions
+    async def reload(self, ctx: commands.Context,
+        *,
+        extensions: str = commands.parameter(description='The extensions to reload. Names separated by space')
+    ) -> None:
+        to_reload = [ext.split('.')[-1] for ext in self.bot.extensions.keys()] if extensions[0] == 'all' else extensions.split(' ')
         action = 'reload'
         result = await self.manage_extensions(to_reload, action)
         await ctx.reply(self._format_extensions_message(result, action))
 
     @commands.command(**get_command_attributes('load'))
-    async def load(self, ctx: commands.Context, *extensions: str) -> None:
+    async def load(self, ctx: commands.Context,
+        *,
+        extensions: str = commands.parameter(description='The extensions to load. Names separated by space')
+    ) -> None:
         action = 'load'
         result = await self.manage_extensions(extensions, action)
         await ctx.reply(self._format_extensions_message(result, action))
 
     @commands.command(**get_command_attributes('unload'))
-    async def unload(self, ctx: commands.Context, *extensions: str) -> None:
+    async def unload(self, ctx: commands.Context,
+        *,
+        extensions: str = commands.parameter(description='The extensions to unload. Names separated by space')
+    ) -> None:
         action = 'unload'
         result = await self.manage_extensions(extensions, action)
         await ctx.reply(self._format_extensions_message(result, action))
