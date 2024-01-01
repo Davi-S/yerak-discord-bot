@@ -22,14 +22,14 @@ get_command_attributes = get_command_attributes_builder(_commands_attributes)
 
 class MemberListConverter(commands.Converter):
     async def convert(self, ctx, argument):
-        member_mentions = [mention for mention in argument.split(' ')]
         members = []
-        for mention in member_mentions:
+        for mention in argument.split(' '):
             try:
                 member = await commands.MemberConverter().convert(ctx, mention)
                 members.append(member)
             except commands.errors.BadArgument:
-                pass  # Ignore if the mention is not a valid member
+                # Ignore if the mention is not a valid member
+                pass  
         return members
 
 class Rave(commands.GroupCog):
