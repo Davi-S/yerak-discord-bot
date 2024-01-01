@@ -34,6 +34,10 @@ class MemberListConverter(commands.Converter):
 
 class Rave(commands.GroupCog):
     """Light up the server"""
+    long_description = (
+    """Create top hierarchy roles and change their color dynamically, making the server very animated.
+    Every rave has a 10 minutes timeout"""
+    )
     # TODO: do not let two raves at the same time
     # TODO: check how the rave behaves in different guilds
     def __init__(self, bot: BotYerak) -> None:
