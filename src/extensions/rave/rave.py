@@ -36,6 +36,7 @@ class Rave(commands.GroupCog):
     """Light up the server"""
     # TODO: do not let two raves at the same time
     # TODO: check how the rave behaves in different guilds
+    # TODO: add rave timeout (10 minutes)
     def __init__(self, bot: BotYerak) -> None:
         self.bot = bot
         self.role_name = "Yerak's Raver"
