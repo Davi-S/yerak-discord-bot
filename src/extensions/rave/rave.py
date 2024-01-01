@@ -36,11 +36,10 @@ class Rave(commands.GroupCog):
     """Light up the server"""
     # TODO: do not let two raves at the same time
     # TODO: check how the rave behaves in different guilds
-    # TODO: add timeout to tasks
     def __init__(self, bot: BotYerak) -> None:
         self.bot = bot
         self.role_name = "Yerak's Raver"
-        self.timeout = 10  # 600 seconds equals to 10 minutes
+        self.timeout = 600  # 600 seconds equals to 10 minutes
         self.tasks = self.get_tasks()
         self.setup_tasks_error_handler()
 
@@ -67,6 +66,7 @@ class Rave(commands.GroupCog):
         await self.apply_all_roles(roles, members or ctx.guild.members)
         # Prepare task
         self.hue_cycle_task.change_interval(seconds=speed)
+        self.hue_cycle_task.count = self.timeout // speed
         self.hue_cycle_task.start(ctx, roles[0].id, step)
         await ctx.reply('Hue Cycle rave started')
 
@@ -94,6 +94,7 @@ class Rave(commands.GroupCog):
         await self.apply_even_roles(roles, members or ctx.guild.members)
         # Prepare tasks
         self.crazy_task.change_interval(seconds=speed)
+        self.crazy_task.count = self.timeout // speed
         self.crazy_task.start(roles)
         await ctx.reply('Crazy rave started')
         
