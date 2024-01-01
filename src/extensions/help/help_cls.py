@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from settings import settings
 
-# TODO: show hidden command and cogs to allowed persons
+
 class MyHelp(commands.HelpCommand):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
