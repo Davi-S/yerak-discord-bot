@@ -44,6 +44,7 @@ class MyHelp(commands.HelpCommand):
         else:
             available_commands = self.get_bot_mapping()[None]
         cog_name = cog.qualified_name if cog else self.no_category_qualified_name
+        cog_long_description = cog.long_description or ''
 
         # Do not how hidden cogs.
         # Send error message
@@ -54,7 +55,7 @@ class MyHelp(commands.HelpCommand):
 
         embed = self.get_embed()
         embed.title = self.embed_title(cog_name) + ' category'
-        embed.description = (f'Total of **{len(available_commands)}** commands in this category')
+        embed.description = (f'{cog_long_description}\n\nTotal of **{len(available_commands)}** commands in this category')
         for command in available_commands:
             embed.add_field(
                 name=command.qualified_name,
