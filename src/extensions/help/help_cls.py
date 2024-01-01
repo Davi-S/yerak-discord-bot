@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-
+# TODO: show hidden command and cogs to allowed persons
 class MyHelp(commands.HelpCommand):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -40,7 +40,7 @@ class MyHelp(commands.HelpCommand):
 
     async def send_cog_help(self, cog: commands.Cog) -> None:
         if cog:
-            available_commands = await self.filter_commands(cog.get_commands())
+            available_commands = await self.filter_commands(cog.get_commands(), sort=True)
         else:
             available_commands = self.get_bot_mapping()[None]
         cog_name = cog.qualified_name if cog else self.no_category_qualified_name
