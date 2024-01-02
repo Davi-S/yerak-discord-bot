@@ -24,6 +24,11 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
 
     def __init__(self, bot: BotYerak):
         self.bot = bot
+        
+    def cog_load(self) -> None:
+        # Delete the global command attributes cache. After the cog has loaded, it is not needed anymore and can be deleted to save memory
+        global _commands_attributes
+        del _commands_attributes
 
     async def cog_before_invoke(self, ctx: commands.Context) -> None:
         if ctx.author.id not in settings.users_developers_ids:

@@ -21,6 +21,11 @@ class Miscellaneous(commands.GroupCog):
 
     def __init__(self, bot: BotYerak) -> None:
         self.bot = bot
+        
+    def cog_load(self) -> None:
+        # Delete the global command attributes cache. After the cog has loaded, it is not needed anymore and can be deleted to save memory
+        global _commands_attributes
+        del _commands_attributes
 
     @commands.hybrid_command(**get_command_attributes('ping'))
     async def ping(self, ctx: commands.Context) -> None:

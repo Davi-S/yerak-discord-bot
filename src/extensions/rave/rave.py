@@ -44,6 +44,11 @@ class Rave(commands.GroupCog):
         self.timeout = 480  # 480 seconds equals to 8 minutes
         self.tasks = self.get_tasks()
         self.setup_tasks()
+        
+    def cog_load(self) -> None:
+        # Delete the global command attributes cache. After the cog has loaded, it is not needed anymore and can be deleted to save memory
+        global _commands_attributes
+        del _commands_attributes
 
     @commands.hybrid_command(**get_command_attributes('pause'))
     async def pause(self, ctx: commands.Context) -> None:
