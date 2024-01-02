@@ -26,6 +26,7 @@ class BotYerak(commands.Bot):
         logger.warning('Preparing to close bot')
         logger.warning('unloading all extensions')
         await exts.manage_extensions(self, [extension.split('.')[1] for extension in self.extensions], 'unload')
+        logger.warning('Closing the bot')
         await self.close()
         
     async def setup_hook(self) -> None:
