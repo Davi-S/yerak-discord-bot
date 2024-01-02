@@ -56,9 +56,14 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
 
     @commands.command(**get_command_attributes('close'))
     async def close(self, ctx: commands.Context) -> None:
-        await ctx.reply(f'Closing bot')
-        logger.info(f'Closing bot')
-        await self.bot.close()
+        await ctx.reply(f'Are you sure you want to close the bot ["yes" or "no"]?')
+        confirmation_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author)
+        if confirmation_message.content[0].lower() in ['y']:
+            await ctx.reply(f'Closing bot')
+            logger.info(f'Closing bot')
+            await self.bot.close()
+        else:
+            await ctx.reply(f'Not closing the bot')
 
     async def manage_extensions(self, extensions: list[str], action: str) -> dict[str, list]:
         success = []
