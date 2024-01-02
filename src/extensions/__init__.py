@@ -20,3 +20,9 @@ def get_command_attributes_builder(commands_attributes_cache: dict) -> t.Callabl
     def get_command_attributes(command_name: str) -> dict:
         return commands_attributes_cache.get(command_name, {})
     return get_command_attributes
+
+
+def get_command_parameters_builder(commands_attributes_cache: dict) -> t.Callable[[str, str], dict]:
+    def get_command_parameters(command_name: str, parameter_name: str) -> dict:
+        return commands_attributes_cache.get(command_name, {}).get('parameters', {}).get(parameter_name, {})
+    return get_command_parameters
