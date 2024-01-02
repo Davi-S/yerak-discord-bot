@@ -47,7 +47,7 @@ async def manage_extensions(bot: commands.Bot, extensions: list[str], action: st
     if extension_action is None:
         logger.error('Failed to manage extensions due to invalid action')
         raise ValueError('Failed to manage extensions due to invalid action')
-
+    # TODO: maybe move logging messages from here to the "on_action" of each cog?
     for extension in extensions:
         try:
             await extension_action(f'extensions.{extension}')
@@ -55,7 +55,6 @@ async def manage_extensions(bot: commands.Bot, extensions: list[str], action: st
             logger.info(f'Extension "{extension}" {action}ed successfully')
         except commands.ExtensionError as error:
             fail.append((extension, error))
-            logger.error(
-                f'Failed to {action} the extension "{extension}" due to error: {error}')
+            logger.error(f'Failed to {action} the extension "{extension}" due to error: {error}')
 
     return {'success': success, 'fail': fail}
