@@ -5,7 +5,7 @@ from discord.ext import commands
 
 from bot_yerak import BotYerak
 
-from .. import get_command_attributes_builder, read_commands_attributes
+from .. import (get_command_attributes_builder, read_commands_attributes)
 
 logger = logging.getLogger(__name__)
 

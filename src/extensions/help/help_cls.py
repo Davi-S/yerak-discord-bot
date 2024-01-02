@@ -59,7 +59,7 @@ class MyHelp(commands.HelpCommand):
             return
 
         embed = self.get_embed()
-        embed.title = self.embed_title(cog_name) + ' category'
+        embed.title = f'{self.embed_title(cog_name)} category'
         embed.description = (f'{cog_long_description}\n\nTotal of **{len(available_commands)}** commands in this category')
         for command in available_commands:
             embed.add_field(
@@ -78,7 +78,7 @@ class MyHelp(commands.HelpCommand):
             return
 
         embed = self.get_embed()
-        embed.title = self.embed_title(command.qualified_name) + ' command'
+        embed.title = f'{self.embed_title(command.qualified_name)} command'
         embed.description = command.help
         for key, value in self.get_command_attributes(command).items():
             embed.add_field(
@@ -120,7 +120,7 @@ class MyHelp(commands.HelpCommand):
         return discord.Embed(color=self.color_hex)
 
     def embed_title(self, topic: str = '') -> str:
-        return 'Yerak\'s help' if not topic else f'Yerak\'s help on "{topic}"'
+        return f'Yerak\'s help on "{topic}"' if topic else 'Yerak\'s help'
 
     def embed_footer(self, full=True) -> str:
         first = '<> is a required parameter, [] is an optional parameter.\n'
@@ -131,7 +131,7 @@ class MyHelp(commands.HelpCommand):
         return {
             'Usage': f'- <prefix>{command.name} {command.signature}\n{self.get_command_parameters(command)}',
             'Aliases': ', '.join(command.aliases) or 'No aliases',
-            'Category': self.no_category_qualified_name if not command.cog else command.cog.qualified_name,
+            'Category': command.cog.qualified_name if command.cog else self.no_category_qualified_name
         }
         
     def get_command_parameters(self, command: commands.Command) -> str:

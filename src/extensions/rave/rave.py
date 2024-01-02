@@ -1,4 +1,5 @@
 import colorsys
+import contextlib
 import itertools
 import logging
 import random
@@ -9,7 +10,7 @@ from discord.ext import commands, tasks
 
 from bot_yerak import BotYerak
 
-from .. import get_command_attributes_builder, get_command_parameters_builder, read_commands_attributes
+from .. import (get_command_attributes_builder, get_command_parameters_builder,read_commands_attributes)
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +26,9 @@ class MemberListConverter(commands.Converter):
     async def convert(self, ctx, argument):
         members = []
         for mention in argument.split(' '):
-            try:
+            with contextlib.suppress(commands.errors.BadArgument):
                 member = await commands.MemberConverter().convert(ctx, mention)
                 members.append(member)
-            except commands.errors.BadArgument:
-                # Ignore if the mention is not a valid member
-                pass  
         return members
 
 class Rave(commands.GroupCog):
@@ -115,10 +113,7 @@ class Rave(commands.GroupCog):
             role: discord.Role = await ctx.guild.create_role(name=self.role_name)
             created_roles.append(role)
 
-        # Sort roles and update their positions
-        roles_positions = {}
-        for idx, role in enumerate(ctx.guild.roles):
-            roles_positions[role] = idx
+        roles_positions = {role: idx for idx, role in enumerate(ctx.guild.roles)}
         roles_positions = dict(reversed(list(roles_positions.items())))
         found = False
         for role, position in roles_positions.items():
@@ -177,6 +172,7 @@ class Rave(commands.GroupCog):
         self.stop_tasks()
     
     async def on_tasks_error(self, _, error: discord.DiscordException):
+        # sourcery skip: remove-pass-body
         # Because this function is not being set by a decorator, it receives two "self" arguments when called. Using the "_" to ignore the second "self" argument
         # In case the role is deleted while the task is running
         if isinstance(error, (AttributeError, discord.errors.NotFound)):
