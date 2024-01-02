@@ -37,43 +37,41 @@ class ErrorHandler(commands.Cog):
         if isinstance(error, self.ignored_errors):
             return
 
-        # Handle each error dynamically with methods if there is a method for it
-        if hasattr(self, self.handle_error_method_name.format(error_name=error.__class__.__name__)):
-            method = getattr(
-                self,
-                self.handle_error_method_name.format(error_name=error.__class__.__name__)
-            )
-            return await method(ctx, error)
-
-        # All errors not handled come here
-        else:
+        if not hasattr(
+            self,
+            self.handle_error_method_name.format(error_name=error.__class__.__name__)
+        ):
             return await self._unhandled_error(ctx, error)
+        
+        method = getattr(
+            self,
+            self.handle_error_method_name.format(error_name=error.__class__.__name__)
+        )
+        return await method(ctx, error)
 
     async def _unhandled_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
         logger.error(f'Unhandled Exception: {error}')
         error_message = {
-            f'Error Class Name': error.__class__.__name__,
-            f'Error Message': str(error),
-            f'Message': ctx.message.content,
-            f'Guild/Channel': f'Guild: {ctx.guild.name} -> {ctx.guild.id}' if ctx.guild else f'channel: {ctx.channel.name} -> {ctx.channel.id}' if ctx.channel else 'None',
-            f'User': f'{ctx.author.name} -> {ctx.author.id}',
-            f'Cog': ctx.command.cog.qualified_name if ctx.command and ctx.command.cog else 'None',
+            'Error Class Name': error.__class__.__name__,
+            'Error Message': str(error),
+            'Message': ctx.message.content,
+            'Guild/Channel': f'Guild: {ctx.guild.name} -> {ctx.guild.id}' if ctx.guild else f'channel: {ctx.channel.name} -> {ctx.channel.id}' if ctx.channel else 'None',
+            'User': f'{ctx.author.name} -> {ctx.author.id}',
+            'Cog': ctx.command.cog.qualified_name if ctx.command and ctx.command.cog else 'None',
         }
-        
+
         embed = discord.Embed(title='Unhandled Exception')
         for key, value in error_message.items():
             embed.add_field(name=key, value=value, inline=False)
 
         for developer_id in settings.users_developers_ids:
             if user := await self.bot.fetch_user(int(developer_id)):
-                try:
+                with contextlib.suppress(discord.errors.Forbidden):
                     await user.send(embed=embed)
-                except discord.errors.Forbidden:
-                    pass
 
     async def _handle_NotAuthorizedUser(self, ctx: commands.Context, error: commands.CommandError) -> None:
         logger.warning(f'User "{ctx.author.name}" with id "{ctx.author.id}" tried to use the command "{ctx.command.name}"')
         with contextlib.suppress(Exception):
             # Try to send DM message to the author
             await ctx.message.author.send(f'You cannot use the command `{ctx.command.qualified_name}`')
-        await ctx.reply(f'You cannot use this command')
+        await ctx.reply('You cannot use this command')

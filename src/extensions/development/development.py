@@ -7,7 +7,7 @@ import custom_errors
 from bot_yerak import BotYerak
 from settings import settings
 
-from .. import get_command_attributes_builder, get_command_parameters_builder, read_commands_attributes
+from .. import (get_command_attributes_builder, get_command_parameters_builder, read_commands_attributes)
 
 logger = logging.getLogger(__name__)
 
@@ -66,9 +66,14 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
 
     @commands.command(**get_command_attributes('close'))
     async def close(self, ctx: commands.Context) -> None:
-        await ctx.reply(f'Closing bot')
-        logger.info(f'Closing bot')
-        await self.bot.close()
+        await ctx.reply('Are you sure you want to close the bot ["yes" or "no"]?')
+        confirmation_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author)
+        if confirmation_message.content[0].lower() in ['y']:
+            await ctx.reply('Closing bot')
+            logger.info('Closing bot')
+            await self.bot.close()
+        else:
+            await ctx.reply('Not closing the bot')
 
     async def manage_extensions(self, extensions: list[str], action: str) -> dict[str, list]:
         success = []
