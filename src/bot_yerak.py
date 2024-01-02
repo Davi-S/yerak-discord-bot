@@ -1,7 +1,10 @@
 import asyncio
 import logging
 import signal
+
 from discord.ext import commands
+
+import extensions as exts
 from settings import settings
 
 logger = logging.getLogger(__name__)
@@ -20,19 +23,15 @@ class BotYerak(commands.Bot):
     async def exit(self, *args, **kwargs) -> None:
         """Exit handler for termination signals"""
         # TODO: fix "Unclosed connector" and "Unclosed client session" error
-        logger.warning('Closing bot')
+        logger.warning('Preparing to close bot')
+        logger.warning('unloading all extensions')
+        await exts.manage_extensions(self, [extension.split('.')[1] for extension in self.extensions], 'unload')
         await self.close()
         
     async def setup_hook(self) -> None:
         """Setup the bot"""
-        # Load extensions
-        for extension in self.initial_extensions:
-            try:
-                await self.load_extension(f'extensions.{extension}')
-                logger.info(f'Extension "{extension}" loaded successfully')
-            except Exception as error:
-                logger.error(f'Error while loading the extension "{extension}". {error}')
-        
+        await exts.manage_extensions(self, self.initial_extensions, 'load')
+                
         # # Sync application commands with testing guilds
         # for guild_id in settings.guilds_developers_ids:
         #     guild = await self.fetch_guild(guild_id)

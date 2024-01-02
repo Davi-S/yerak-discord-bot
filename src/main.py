@@ -13,7 +13,7 @@ import discord
 from discord.ext import commands
 
 import bot_yerak as by
-import extensions
+import extensions as exts
 from settings import settings
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ async def main() -> int:
         command_prefix=commands.when_mentioned_or(*settings.prefixes),
         help_command=commands.MinimalHelpCommand(),
         intents=discord.Intents.all(),
-        initial_extensions=extensions.get_extensions_names()
+        initial_extensions=exts.get_extensions_names()
     ) as bot:
         await bot.start(settings.token)
 
