@@ -9,7 +9,7 @@ from discord.ext import commands, tasks
 
 from bot_yerak import BotYerak
 
-from .. import get_command_attributes_builder, read_commands_attributes
+from .. import get_command_attributes_builder, get_command_parameters_builder, read_commands_attributes
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +18,7 @@ THIS_FOLDER = Path(__file__).parent
 
 _commands_attributes = read_commands_attributes(THIS_FOLDER/'commands_attr.json')  # Global cache for config data
 get_command_attributes = get_command_attributes_builder(_commands_attributes)
+get_command_parameters = get_command_parameters_builder(_commands_attributes)
 
 
 class MemberListConverter(commands.Converter):
@@ -34,10 +35,9 @@ class MemberListConverter(commands.Converter):
 
 class Rave(commands.GroupCog):
     """Light up the server"""
-    long_description = (
-    """Create top hierarchy roles and change their color dynamically, making the server very animated.
-    Every rave has an 8 minutes timeout"""
-    )
+    long_description = """
+        Create top hierarchy roles and change their color dynamically, making the server very animated.
+        Every rave has an 8 minutes timeout"""
     # TODO: do not let two raves at the same time
     # TODO: check how the rave behaves in different guilds
     def __init__(self, bot: BotYerak) -> None:
@@ -60,10 +60,10 @@ class Rave(commands.GroupCog):
 
     @commands.hybrid_command(**get_command_attributes('hue_cycle'))
     async def hue_cycle(self, ctx: commands.Context,
-        step: float = commands.parameter(default=0.01, description='How much the color will change each time. Goes from 0 to 1'),
-        speed: float = commands.parameter(default=1.0, description='The time between each color change in seconds'),
+        step: float = commands.parameter(**get_command_parameters('hue_cycle', 'step')),
+        speed: float = commands.parameter(**get_command_parameters('hue_cycle', 'speed')),
         *,
-        members: list[discord.Member] | None = commands.parameter(converter=MemberListConverter, default=None, displayed_default='everyone', description='The members that will receive the rave role')
+        members: list[discord.Member] | None = commands.parameter(converter=MemberListConverter, **get_command_parameters('hue_cycle', 'members'))
     ) -> None:
         # Prepare roles
         roles = await self.get_roles(ctx, 1)
@@ -88,10 +88,10 @@ class Rave(commands.GroupCog):
             
     @commands.hybrid_command(**get_command_attributes('crazy'))
     async def crazy(self, ctx: commands.Context,
-        amount: int = commands.parameter(default=3, description='How much different colors at the same time'),
-        speed: float = commands.parameter(default=4.0, description='The time between each color change in seconds'),
+        amount: int = commands.parameter(**get_command_parameters('crazy', 'amount')),
+        speed: float = commands.parameter(**get_command_parameters('crazy', 'speed')),
         *,
-        members: list[discord.Member] | None = commands.parameter(converter=MemberListConverter, default=None, displayed_default='everyone', description='The members that will receive the rave role. Default is everyone that can')
+        members: list[discord.Member] | None = commands.parameter(converter=MemberListConverter, **get_command_parameters('crazy', 'members'))
     ) -> None:
         # Prepare roles
         roles = await self.get_roles(ctx, amount)
