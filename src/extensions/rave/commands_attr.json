@@ -11,11 +11,41 @@
         "name": "hue-cycle",
         "help": "Starts a 'Hue Cycle' rave. Needs one role. The role will have its color changed in a cycle periodically",
         "brief": "Starts a 'Hue Cycle' rave",
-        "aliases": ["rhc", "hue_cycle"]
+        "aliases": ["rhc", "hue_cycle"],
+        "parameters": {
+            "step": {
+                "default": 0.01,
+                "description": "How much the color will change each time. Goes from 0 to 1" 
+            },
+            "speed": {
+                "default": 1.0,
+                "description": "The time between each color change in seconds" 
+            },
+            "members": {
+                "default": null,
+                "displayed_default": "everyone",
+                "description": "The members that will receive the rave role"
+            }
+        }
     },
     "crazy": {
         "help": "Starts a 'Crazy' rave. A certain amount of roles will change their color to a random value periodically",
         "brief": "Starts a 'Crazy' rave",
-        "aliases": ["rc"]
+        "aliases": ["rc"],
+        "parameters": {
+            "amount": {
+                "default": 3,
+                "description": "How much different colors at the same time" 
+            },
+            "speed": {
+                "default": 4.0,
+                "description": "The time between each color change in seconds" 
+            },
+            "members": {
+                "default": null,
+                "displayed_default": "everyone",
+                "description": "The members that will receive the rave role"
+            }
+        }
     }
 }

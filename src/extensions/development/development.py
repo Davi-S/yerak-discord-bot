@@ -7,7 +7,7 @@ import custom_errors
 from bot_yerak import BotYerak
 from settings import settings
 
-from .. import get_command_attributes_builder, read_commands_attributes
+from .. import get_command_attributes_builder, get_command_parameters_builder, read_commands_attributes
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +16,7 @@ THIS_FOLDER = Path(__file__).parent
 
 _commands_attributes = read_commands_attributes(THIS_FOLDER/'commands_attr.json')  # Global cache for config data
 get_command_attributes = get_command_attributes_builder(_commands_attributes)
+get_command_parameters = get_command_parameters_builder(_commands_attributes)
 
 
 class Development(commands.Cog, command_attrs=dict(hidden=True)):
@@ -30,20 +31,29 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
             raise custom_errors.NotAuthorizedUser('Some user tried to execute a developer\'s command')
 
     @commands.command(**get_command_attributes('reload'))
-    async def reload(self, ctx: commands.Context, *extensions: str) -> None:
-        to_reload = [ext.split('.')[-1] for ext in self.bot.extensions.keys()] if extensions[0] == 'all' else extensions
+    async def reload(self, ctx: commands.Context,
+        *,
+        extensions: str = commands.parameter(**get_command_parameters('reload', 'extensions'))
+    ) -> None:
+        to_reload = [ext.split('.')[-1] for ext in self.bot.extensions.keys()] if extensions[0] == 'all' else extensions.split(' ')
         action = 'reload'
         result = await self.manage_extensions(to_reload, action)
         await ctx.reply(self._format_extensions_message(result, action))
 
     @commands.command(**get_command_attributes('load'))
-    async def load(self, ctx: commands.Context, *extensions: str) -> None:
+    async def load(self, ctx: commands.Context,
+        *,
+        extensions: str = commands.parameter(**get_command_parameters('load', 'extensions'))
+    ) -> None:
         action = 'load'
         result = await self.manage_extensions(extensions, action)
         await ctx.reply(self._format_extensions_message(result, action))
 
     @commands.command(**get_command_attributes('unload'))
-    async def unload(self, ctx: commands.Context, *extensions: str) -> None:
+    async def unload(self, ctx: commands.Context,
+        *,
+        extensions: str = commands.parameter(**get_command_parameters('unload', 'extensions'))
+    ) -> None:
         action = 'unload'
         result = await self.manage_extensions(extensions, action)
         await ctx.reply(self._format_extensions_message(result, action))

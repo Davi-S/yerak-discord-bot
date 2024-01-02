@@ -2,17 +2,32 @@
     "reload": {
         "help": "Reload an extension",
         "brief": "Reload an extension",
-        "aliases": ["r"]
+        "aliases": ["r"],
+        "parameters": {
+            "extensions": {
+                "description": "The extensions to reload. Names separated by space"
+            }
+        }
     },
     "load": {
         "help": "Load an extension",
         "brief": "Load an extension",
-        "aliases": ["l"]
+        "aliases": ["l"],
+        "parameters": {
+            "extensions": {
+                "description": "The extensions to reload. Names separated by space"
+            }
+        }
     },
     "unload": {
         "help": "Unload an extension",
         "brief": "Unload an extension",
-        "aliases": ["u"]
+        "aliases": ["u"],
+        "parameters": {
+            "extensions": {
+                "description": "The extensions to reload. Names separated by space"
+            }
+        }
     },
     "sync": {
         "help": "Sync the bot's slash command",
