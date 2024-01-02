@@ -75,8 +75,7 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
         confirmation_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author)
         if confirmation_message.content[0].lower() in ['y']:
             await ctx.reply('Closing bot')
-            logger.info('Closing bot')
-            await self.bot.close()
+            await self.bot.exit()
         else:
             await ctx.reply('Not closing the bot')
 

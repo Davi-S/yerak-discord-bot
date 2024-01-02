@@ -15,12 +15,12 @@ class BotYerak(commands.Bot):
 
     def add_exit_handler(self) -> None:
         """Register a signal handler for termination signals (usually ctrl+c)"""
-        signal.signal(signal.SIGINT, lambda *args, **kwargs: asyncio.create_task(self.exit_handler(*args, **kwargs)))
+        signal.signal(signal.SIGINT, lambda *args, **kwargs: asyncio.create_task(self.exit(*args, **kwargs)))
         
-    async def exit_handler(self, *args, **kwargs) -> None:
+    async def exit(self, *args, **kwargs) -> None:
         """Exit handler for termination signals"""
         # TODO: fix "Unclosed connector" and "Unclosed client session" error
-        logger.warning('Exit handler function called')
+        logger.warning('Closing bot')
         await self.close()
         
     async def setup_hook(self) -> None:
