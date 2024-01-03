@@ -7,16 +7,16 @@ import custom_errors
 from bot_yerak import BotYerak
 from settings import settings
 
-from .. import (get_command_attributes_builder, get_command_parameters_builder, read_commands_attributes)
+import extensions as exts
 
 logger = logging.getLogger(__name__)
 
 THIS_FOLDER = Path(__file__).parent
 
 
-_commands_attributes = read_commands_attributes(THIS_FOLDER/'commands_attr.json')  # Global cache for config data
-get_command_attributes = get_command_attributes_builder(_commands_attributes)
-get_command_parameters = get_command_parameters_builder(_commands_attributes)
+_commands_attributes = exts.read_commands_attributes(THIS_FOLDER/'commands_attr.json')  # Global cache for config data
+get_command_attributes = exts.get_command_attributes_builder(_commands_attributes)
+get_command_parameters = exts.get_command_parameters_builder(_commands_attributes)
 
 
 class Development(commands.Cog, command_attrs=dict(hidden=True)):
@@ -24,6 +24,11 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
 
     def __init__(self, bot: BotYerak):
         self.bot = bot
+        
+    def cog_load(self) -> None:
+        # Delete the global command attributes cache. After the cog has loaded, it is not needed anymore and can be deleted to save memory
+        global _commands_attributes
+        del _commands_attributes
 
     async def cog_before_invoke(self, ctx: commands.Context) -> None:
         if ctx.author.id not in settings.users_developers_ids:
@@ -37,7 +42,7 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
     ) -> None:
         to_reload = [ext.split('.')[-1] for ext in self.bot.extensions.keys()] if extensions[0] == 'all' else extensions.split(' ')
         action = 'reload'
-        result = await self.manage_extensions(to_reload, action)
+        result = await exts.manage_extensions(self.bot, [to_reload], action)
         await ctx.reply(self._format_extensions_message(result, action))
 
     @commands.command(**get_command_attributes('load'))
@@ -46,7 +51,7 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
         extensions: str = commands.parameter(**get_command_parameters('load', 'extensions'))
     ) -> None:
         action = 'load'
-        result = await self.manage_extensions(extensions, action)
+        result = await exts.manage_extensions(self.bot, [extensions], action)
         await ctx.reply(self._format_extensions_message(result, action))
 
     @commands.command(**get_command_attributes('unload'))
@@ -55,7 +60,7 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
         extensions: str = commands.parameter(**get_command_parameters('unload', 'extensions'))
     ) -> None:
         action = 'unload'
-        result = await self.manage_extensions(extensions, action)
+        result = await exts.manage_extensions(self.bot, [extensions], action)
         await ctx.reply(self._format_extensions_message(result, action))
 
     @commands.command(**get_command_attributes('sync'))
@@ -70,35 +75,9 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
         confirmation_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author)
         if confirmation_message.content[0].lower() in ['y']:
             await ctx.reply('Closing bot')
-            logger.info('Closing bot')
-            await self.bot.close()
+            await self.bot.exit()
         else:
             await ctx.reply('Not closing the bot')
-
-    async def manage_extensions(self, extensions: list[str], action: str) -> dict[str, list]:
-        success = []
-        fail = []
-        action_mapping = {
-            'unload': self.bot.unload_extension,
-            'load': self.bot.load_extension,
-            'reload': self.bot.reload_extension,
-        }
-
-        extension_action = action_mapping.get(action)
-        if extension_action is None:
-            logger.error('Failed to manage extensions due to invalid action')
-            raise ValueError('Failed to manage extensions due to invalid action')
-
-        for extension in extensions:
-            try:
-                await extension_action(f'extensions.{extension}')
-                success.append(extension)
-                logger.info(f'Extension "{extension}" {action}ed successfully')
-            except commands.ExtensionError as error:
-                fail.append((extension, error))
-                logger.error(f'Failed to {action} the extension "{extension}" due to error: {error}')
-
-        return {'success': success, 'fail': fail}
 
     def _format_extensions_message(self, result: dict[str, list], action: str) -> str:
         success_message = f'Extension(s): "{", ".join(result["success"])}" {action}ed successfully' if result["success"] else ''

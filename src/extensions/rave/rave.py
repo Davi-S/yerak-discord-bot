@@ -10,16 +10,16 @@ from discord.ext import commands, tasks
 
 from bot_yerak import BotYerak
 
-from .. import (get_command_attributes_builder, get_command_parameters_builder,read_commands_attributes)
+import extensions as exts
 
 logger = logging.getLogger(__name__)
 
 THIS_FOLDER = Path(__file__).parent
 
 
-_commands_attributes = read_commands_attributes(THIS_FOLDER/'commands_attr.json')  # Global cache for config data
-get_command_attributes = get_command_attributes_builder(_commands_attributes)
-get_command_parameters = get_command_parameters_builder(_commands_attributes)
+_commands_attributes = exts.read_commands_attributes(THIS_FOLDER/'commands_attr.json')  # Global cache for config data
+get_command_attributes = exts.get_command_attributes_builder(_commands_attributes)
+get_command_parameters = exts.get_command_parameters_builder(_commands_attributes)
 
 
 class MemberListConverter(commands.Converter):
@@ -44,6 +44,11 @@ class Rave(commands.GroupCog):
         self.timeout = 480  # 480 seconds equals to 8 minutes
         self.tasks = self.get_tasks()
         self.setup_tasks()
+        
+    def cog_load(self) -> None:
+        # Delete the global command attributes cache. After the cog has loaded, it is not needed anymore and can be deleted to save memory
+        global _commands_attributes
+        del _commands_attributes
 
     @commands.hybrid_command(**get_command_attributes('pause'))
     async def pause(self, ctx: commands.Context) -> None:
@@ -53,7 +58,7 @@ class Rave(commands.GroupCog):
     @commands.hybrid_command(**get_command_attributes('stop'))
     async def stop(self, ctx: commands.Context) -> None:
         self.stop_tasks()
-        await self.delete_roles(ctx, all=True)
+        await self.delete_roles(ctx.guild, all=True)
         await ctx.reply('Rave stopped')
 
     @commands.hybrid_command(**get_command_attributes('hue_cycle'))
@@ -64,7 +69,7 @@ class Rave(commands.GroupCog):
         members: list[discord.Member] | None = commands.parameter(converter=MemberListConverter, **get_command_parameters('hue_cycle', 'members'))
     ) -> None:
         # Prepare roles
-        roles = await self.get_roles(ctx, 1)
+        roles = await self.get_roles(ctx.guild, 1)
         await self.apply_all_roles(roles, members or ctx.guild.members)
         # Prepare task
         self.hue_cycle_task.change_interval(seconds=speed)
@@ -92,7 +97,7 @@ class Rave(commands.GroupCog):
         members: list[discord.Member] | None = commands.parameter(converter=MemberListConverter, **get_command_parameters('crazy', 'members'))
     ) -> None:
         # Prepare roles
-        roles = await self.get_roles(ctx, amount)
+        roles = await self.get_roles(ctx.guild, amount)
         await self.apply_even_roles(roles, members or ctx.guild.members)
         # Prepare tasks
         self.crazy_task.change_interval(seconds=speed)
@@ -106,14 +111,14 @@ class Rave(commands.GroupCog):
             color_hsv = (random.random(), 0.8, 0.8)
             await role.edit(color=discord.Color.from_hsv(*color_hsv))
             
-    async def create_roles(self, ctx: commands.Context, amount: int) -> list[discord.Role]:
+    async def create_roles(self, guild: discord.Guild, amount: int) -> list[discord.Role]:
         # Create new roles
         created_roles = []
         for _ in range(amount):
-            role: discord.Role = await ctx.guild.create_role(name=self.role_name)
+            role: discord.Role = await guild.create_role(name=self.role_name)
             created_roles.append(role)
 
-        roles_positions = {role: idx for idx, role in enumerate(ctx.guild.roles)}
+        roles_positions = {role: idx for idx, role in enumerate(guild.roles)}
         roles_positions = dict(reversed(list(roles_positions.items())))
         found = False
         for role, position in roles_positions.items():
@@ -126,20 +131,20 @@ class Rave(commands.GroupCog):
             elif found:
                 roles_positions[role] = position - amount
         roles_positions = dict(sorted(roles_positions.items(), key=lambda x: x[1]))
-        await ctx.guild.edit_role_positions(positions=roles_positions)
+        await guild.edit_role_positions(positions=roles_positions)
         return created_roles
 
-    async def delete_roles(self, ctx: commands.Context, amount: int = 1, all=False) -> None:
+    async def delete_roles(self, guild: discord.Guild, amount: int = 1, all=False) -> None:
         deleted = 0
-        for role in ctx.guild.roles:
+        for role in guild.roles:
             if self.is_rave_role(role) and ((deleted < amount) or (all)):
                 await role.delete()
                 deleted += 1
 
-    async def get_roles(self, ctx: commands.Context, amount: int) -> list[discord.Role]:
-        existing_roles = [role for role in ctx.guild.roles if self.is_rave_role(role)]
+    async def get_roles(self, guild: discord.Guild, amount: int) -> list[discord.Role]:
+        existing_roles = [role for role in guild.roles if self.is_rave_role(role)]
         if (existing_roles_amount := len(existing_roles)) < amount:
-            existing_roles.extend(await self.create_roles(ctx, amount-existing_roles_amount))
+            existing_roles.extend(await self.create_roles(guild, amount-existing_roles_amount))
         return existing_roles[:amount]
 
     async def apply_all_roles(self, roles: list[discord.Role], members: list[discord.Member]) -> None:
