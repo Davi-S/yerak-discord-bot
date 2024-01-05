@@ -42,7 +42,7 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
     ) -> None:
         to_reload = [ext.split('.')[-1] for ext in self.bot.extensions.keys()] if extensions[0] == 'all' else extensions.split(' ')
         action = 'reload'
-        result = await exts.manage_extensions(self.bot, [to_reload], action)
+        result = await exts.manage_extensions(self.bot, to_reload, action)
         await ctx.reply(self._format_extensions_message(result, action))
 
     @commands.command(**get_command_attributes('load'))
