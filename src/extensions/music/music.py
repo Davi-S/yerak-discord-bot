@@ -46,7 +46,7 @@ FFMPEG_OPTIONS = {
 class AudioSource(discord.PCMVolumeTransformer):
     def __init__(self, original: discord.FFmpegPCMAudio, volume: float, *, source_data: dict = None):
         super().__init__(original, volume)
-        
+
         self.requester = source_data.get('requester')
         self.channel = source_data.get('channel')
         self.data = source_data
@@ -74,27 +74,30 @@ class AudioSource(discord.PCMVolumeTransformer):
 
         if data is None:
             raise ce.YTDLError(f'Couldn\'t find anything that matches "{search}"')
-        
+
         context_data = {
             'requester': ctx.author,
             'channel': ctx.channel
         }
-    
+
         return cls(discord.FFmpegPCMAudio(data['url'], **ffmpeg_options), volume=volume, source_data=data | context_data)
 
     @staticmethod
     def parse_duration(duration: int):
-        units = [('days', 24 * 60 * 60), ('hours', 60 * 60), ('minutes', 60), ('seconds', 1)]
+        units = [
+            ('days', 24 * 60 * 60),
+            ('hours', 60 * 60),
+            ('minutes', 60),
+            ('seconds', 1)
+        ]
         times = []
-
         for unit, seconds_in_unit in units:
             value, duration = divmod(duration, seconds_in_unit)
             if value > 0:
                 times.append(f'{value} {unit}' if value == 1 else f'{value} {unit}s')
-
         return ', '.join(times)
-    
-    
+
+
 class AudioQueue(asyncio.Queue[AudioSource]):
     def _init(self, maxsize) -> None:
         # TODO: check the maxsize
@@ -105,7 +108,7 @@ class AudioQueue(asyncio.Queue[AudioSource]):
         if not isinstance(item, AudioSource):
             raise TypeError('AudioQueue can only hold AudioSource objects')
         self._queue.append(item)
-        
+
     def clear(self) -> None:
         self._queue.clear()
 
@@ -132,14 +135,14 @@ class CustomVoiceClient(discord.VoiceClient):
         self.audio_player_task = self.client.loop.create_task(self.audio_player())
         self.timeout = timeout
         self.current_audio: AudioSource = None
-        
+
         if on_play_callback is None:
             on_play_callback = self._default_on_play_callback
         if on_play_callback_kwargs is None:
             on_play_callback_kwargs = {}
         self.on_play_callback = on_play_callback
         self.on_play_kwargs = on_play_callback_kwargs
-        
+
     @property
     def volume(self):
         return self.current_audio.volume
@@ -147,7 +150,7 @@ class CustomVoiceClient(discord.VoiceClient):
     @volume.setter
     def volume(self, value: float):
         self.current_audio.volume = value
-        
+
     async def audio_player(self):
         while True:
             self.next_event.clear()
@@ -166,12 +169,12 @@ class CustomVoiceClient(discord.VoiceClient):
             self.play(self.current_audio, after=self.play_next)
             await self.on_play_callback(**self.on_play_kwargs)
             await self.next_event.wait()
-    
+
     def play_next(self, error=None):
         if error:
             raise ce.VoiceError(str(error))
         self.next_event.set()
-        
+
     def skip(self):
         if self.is_playing():
             # Stopping the current audio will trigger the play_next method and start the next song if any available on the queue
@@ -180,13 +183,14 @@ class CustomVoiceClient(discord.VoiceClient):
     async def disconnect(self, *, force: bool = False) -> None:
         self.queue.clear()
         return await super().disconnect(force=force)
-        
+
     async def _default_on_play_callback(self, **kwargs):
         # TODO add args too (not only kwargs)
         return
-    
+
     def __del__(self):
         self.audio_player_task.cancel()
+
 
 class Music(commands.GroupCog):
     """Play songs on a voice channel"""
@@ -223,12 +227,6 @@ class Music(commands.GroupCog):
             await ctx.guild.voice_client.queue.put(audio_source)
             await ctx.reply(f'Enqueued {search}')
 
-    @join.before_invoke
-    @play.before_invoke
-    async def ensure_voice_state(self, ctx: commands.Context):
-        if not ctx.author.voice or not ctx.author.voice.channel:
-            raise commands.CommandError('You are not connected to any voice channel.')
-
     @commands.hybrid_command(**get_command_attributes('set_volume'))
     async def set_volume(self, ctx: commands.Context, volume: int):
         if not ctx.guild.voice_client:
@@ -255,4 +253,10 @@ class Music(commands.GroupCog):
         if ctx.guild.voice_client.is_playing():
             ctx.guild.voice_client.stop()
             await ctx.reply('Stopped')
+
+    @join.before_invoke
+    @play.before_invoke
+    async def ensure_voice_state(self, ctx: commands.Context):
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            raise commands.CommandError('You are not connected to any voice channel.')
 
