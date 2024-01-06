@@ -33,22 +33,62 @@ YTDL_OPTIONS = {
 }
 
 FFMPEG_OPTIONS = {
+    'executable': str(FFMPEG_PATH),
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn',
 }
 
 
-async def create_PCMVolumeTransformer(query: str):
-    loop = asyncio.get_event_loop()
+class AudioSource(discord.PCMVolumeTransformer):
+    def __init__(self, original: discord.FFmpegPCMAudio, volume: float, *, source_data: dict = None):
+        super().__init__(original, volume)
+        
+        self.requester = source_data.get('requester')
+        self.channel = source_data.get('channel')
+        self.data = source_data
+        self.uploader = source_data.get('uploader')
+        self.uploader_url = source_data.get('uploader_url')
+        date = source_data.get('upload_date')
+        self.upload_date = f'{date[6:8]}.{date[4:6]}.{date[:4]}'
+        self.title = source_data.get('title')
+        self.thumbnail = source_data.get('thumbnail')
+        self.description = source_data.get('description')
+        self.duration = self.parse_duration(int(source_data.get('duration')))
+        self.tags = source_data.get('tags')
+        self.url = source_data.get('webpage_url')
+        self.views = source_data.get('view_count')
+        self.likes = source_data.get('like_count')
+        self.dislikes = source_data.get('dislike_count')
+        self.stream_url = source_data.get('url')
 
-    with youtube_dl.YoutubeDL(YTDL_OPTIONS) as ytdl:
-        partial = functools.partial(ytdl.extract_info, query, download=False)
-        data = await loop.run_in_executor(None, partial)
+    @classmethod
+    async def create_source(cls, ctx: commands.Context, search: str, ytdl_options: dict = YTDL_OPTIONS, ffmpeg_options: dict = FFMPEG_OPTIONS):
+        # TODO: check for errors in this method
+        with youtube_dl.YoutubeDL(ytdl_options) as ytdl:
+            partial = functools.partial(ytdl.extract_info, search, download=False)
+            data = await asyncio.get_event_loop().run_in_executor(None, partial)
 
-    if data is None:
-        raise ce.YTDLError(f'Couldn\'t find anything that matches "{query}"')
+        if data is None:
+            raise ce.YTDLError(f'Couldn\'t find anything that matches "{search}"')
+        
+        context_data = {
+            'requester': ctx.author,
+            'channel': ctx.channel
+        }
+    
+        return cls(discord.FFmpegPCMAudio(data['url'], **ffmpeg_options), volume=0.5, source_data=data | context_data)
 
-    return discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(data['url'], executable=str(FFMPEG_PATH), **FFMPEG_OPTIONS), volume=0.5)
+    @staticmethod
+    def parse_duration(duration: int):
+        units = [('days', 24 * 60 * 60), ('hours', 60 * 60), ('minutes', 60), ('seconds', 1)]
+        times = []
+
+        for unit, seconds_in_unit in units:
+            value, duration = divmod(duration, seconds_in_unit)
+            if value > 0:
+                times.append(f'{value} {unit}' if value == 1 else f'{value} {unit}s')
+
+        return ', '.join(times)
 
 
 class Music(commands.GroupCog):
@@ -75,14 +115,14 @@ class Music(commands.GroupCog):
         await ctx.reply('Not connected to any voice channel')
 
     @commands.hybrid_command(**get_command_attributes('play'))
-    async def play(self, ctx: commands.Context, *, query: str):
+    async def play(self, ctx: commands.Context, *, search: str):
         if not ctx.guild.voice_client:
             await ctx.invoke(self.join)
 
         async with ctx.typing():
-            source = await create_PCMVolumeTransformer(query)
+            source = await AudioSource.create_source(ctx, search)
             ctx.guild.voice_client.play(source)
-            await ctx.reply(f'Playing {query}')
+            await ctx.reply(f'Playing {search}')
 
     @join.before_invoke
     @play.before_invoke
@@ -91,7 +131,7 @@ class Music(commands.GroupCog):
             raise commands.CommandError('You are not connected to any voice channel.')
 
     @commands.hybrid_command(**get_command_attributes('set_volume'))
-    async def set_volume(self, ctx: commands.Context, *, volume: int):
+    async def set_volume(self, ctx: commands.Context, volume: int):
         if not ctx.guild.voice_client:
             return await ctx.reply('Nothing being played at the moment.')
         if 0 > volume > 100:
