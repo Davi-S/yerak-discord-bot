@@ -50,16 +50,16 @@ class Rave(commands.GroupCog):
         global _commands_attributes
         del _commands_attributes
 
-    @commands.hybrid_command(**get_command_attributes('pause'))
-    async def pause(self, ctx: commands.Context) -> None:
+    @commands.hybrid_command(**get_command_attributes('suspend'))
+    async def suspend(self, ctx: commands.Context) -> None:
         self.stop_tasks()
-        await ctx.reply('Rave paused')
+        await ctx.reply('Rave suspended')
 
-    @commands.hybrid_command(**get_command_attributes('stop'))
-    async def stop(self, ctx: commands.Context) -> None:
+    @commands.hybrid_command(**get_command_attributes('quit'))
+    async def quit(self, ctx: commands.Context) -> None:
         self.stop_tasks()
         await self.delete_roles(ctx.guild, all=True)
-        await ctx.reply('Rave stopped')
+        await ctx.reply('Rave quit')
 
     @commands.hybrid_command(**get_command_attributes('hue_cycle'))
     async def hue_cycle(self, ctx: commands.Context,

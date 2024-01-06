@@ -1,9 +1,9 @@
 {
-    "pause": {
-        "help": "Pauses the rave. Useful to make modifications on it. The rave can be continued again calling its command with the new arguments.",
+    "suspend": {
+        "help": "Suspend the rave. Useful to make modifications on it. The rave can be continued again calling its command with the new arguments.",
         "brief": "Pauses the rave"
     },
-    "stop": {
+    "quit": {
         "help": "Stops the rave and delete all rave roles",
         "brief": "Stops the rave"
     },
