@@ -1,6 +1,8 @@
 import asyncio
+import collections
 import functools
 import logging
+import random
 from pathlib import Path
 
 import discord
@@ -62,7 +64,7 @@ class AudioSource(discord.PCMVolumeTransformer):
         self.stream_url = source_data.get('url')
 
     @classmethod
-    async def create_source(cls, ctx: commands.Context, search: str, ytdl_options: dict = YTDL_OPTIONS, ffmpeg_options: dict = FFMPEG_OPTIONS):
+    async def create_source(cls, ctx: commands.Context, search: str, ytdl_options: dict = YTDL_OPTIONS, ffmpeg_options: dict = FFMPEG_OPTIONS, volume: float = 0.5):
         # TODO: check for errors in this method
         with youtube_dl.YoutubeDL(ytdl_options) as ytdl:
             partial = functools.partial(ytdl.extract_info, search, download=False)
@@ -76,7 +78,7 @@ class AudioSource(discord.PCMVolumeTransformer):
             'channel': ctx.channel
         }
     
-        return cls(discord.FFmpegPCMAudio(data['url'], **ffmpeg_options), volume=0.5, source_data=data | context_data)
+        return cls(discord.FFmpegPCMAudio(data['url'], **ffmpeg_options), volume=volume, source_data=data | context_data)
 
     @staticmethod
     def parse_duration(duration: int):
