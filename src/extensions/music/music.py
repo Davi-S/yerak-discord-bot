@@ -46,7 +46,8 @@ FFMPEG_OPTIONS = {
 class AudioSource(discord.PCMVolumeTransformer):
     def __init__(self, original: discord.FFmpegPCMAudio, volume: float, *, source_data: dict = None):
         super().__init__(original, volume)
-
+        # Metadata about the audio
+        # TODO: review this data and keep only the necessary
         self.requester = source_data.get('requester')
         self.channel = source_data.get('channel')
         self.data = source_data
@@ -99,8 +100,8 @@ class AudioSource(discord.PCMVolumeTransformer):
 
 
 class AudioQueue(asyncio.Queue[AudioSource]):
+    # TODO: test the maxsize
     def _init(self, maxsize) -> None:
-        # TODO: check the maxsize
         # This is here for type-hints/IDE reasons
         self._queue: t.Deque[AudioSource] = collections.deque()
 
@@ -143,14 +144,6 @@ class CustomVoiceClient(discord.VoiceClient):
         self.on_play_callback = on_play_callback
         self.on_play_kwargs = on_play_callback_kwargs
 
-    @property
-    def volume(self):
-        return self.current_audio.volume
-
-    @volume.setter
-    def volume(self, value: float):
-        self.current_audio.volume = value
-
     async def audio_player(self):
         while True:
             self.next_event.clear()
@@ -181,6 +174,7 @@ class CustomVoiceClient(discord.VoiceClient):
             self.stop()
 
     async def disconnect(self, *, force: bool = False) -> None:
+        # TODO: check what happens if the queue if not cleared before disconnecting
         self.queue.clear()
         return await super().disconnect(force=force)
 
@@ -226,15 +220,6 @@ class Music(commands.GroupCog):
             audio_source = await AudioSource.create_source(ctx, search)
             await ctx.guild.voice_client.queue.put(audio_source)
             await ctx.reply(f'Enqueued {search}')
-
-    @commands.hybrid_command(**get_command_attributes('set_volume'))
-    async def set_volume(self, ctx: commands.Context, volume: int):
-        if not ctx.guild.voice_client:
-            return await ctx.reply('Nothing being played at the moment.')
-        if 0 > volume > 100:
-            return await ctx.reply('Volume must be between 0 and 100')
-        ctx.guild.voice_client.volume = volume / 100
-        await ctx.reply(f'Volume of the player set to {volume}%')
 
     @commands.hybrid_command(**get_command_attributes('pause'))
     async def pause(self, ctx: commands.Context):
