@@ -21,7 +21,7 @@ _commands_attributes = exts.read_commands_attributes(THIS_FOLDER/'commands_attr.
 get_command_attributes = exts.get_command_attributes_builder(_commands_attributes)
 get_command_parameters = exts.get_command_parameters_builder(_commands_attributes)
 
-
+# TODO: check "discord.ext.commands.Greedy"
 class MemberListConverter(commands.Converter):
     async def convert(self, ctx, argument):
         members = []

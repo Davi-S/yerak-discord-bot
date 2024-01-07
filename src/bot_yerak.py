@@ -18,18 +18,18 @@ class BotYerak(commands.Bot):
 
     def add_exit_handler(self) -> None:
         """Register a signal handler for termination signals (usually ctrl+c)"""
-        signal.signal(signal.SIGINT, lambda *args, **kwargs: asyncio.create_task(self.exit(*args, **kwargs)))
-        
-    async def exit(self, *args, **kwargs) -> None:
+        signal.signal(signal.SIGINT, lambda *args, **kwargs: asyncio.create_task(self.close(*args, **kwargs)))
+
+    async def close(self, *args, **kwargs) -> None:
         """Exit handler for termination signals"""
         # TODO: fix "Unclosed connector" and "Unclosed client session" error
         logger.warning('Closing bot')
-        await self.close()
-        
+        await super().close()
+
     async def setup_hook(self) -> None:
         """Setup the bot"""
         await exts.manage_extensions(self, self.initial_extensions, 'load')
-                
+
         # # Sync application commands with testing guilds
         # for guild_id in settings.guilds_developers_ids:
         #     guild = await self.fetch_guild(guild_id)
@@ -37,7 +37,7 @@ class BotYerak(commands.Bot):
         #     self.tree.copy_global_to(guild=guild)
         #     await self.tree.sync(guild=guild)
         #     logger.info(f'Synced with testing guild "{guild.name}"')
-        
+
     async def on_command(self, ctx: commands.Context) -> None:
         """Called when a command is about to be invoked"""
         # Logs all command calls
