@@ -1,14 +1,13 @@
 import logging
 from pathlib import Path
-import custom_context as cc
 
 from discord.ext import commands
 
+import custom_context as cc
 import extensions as exts
 from bot_yerak import BotYerak
 
 from .voice_client import CustomVoiceClient
-from .audio_source import AudioSource
 
 logger = logging.getLogger(__name__)
 
@@ -16,9 +15,10 @@ THIS_FOLDER = Path(__file__).parent
 FFMPEG_PATH = THIS_FOLDER/'ffmpeg.exe'
 
 _commands_attributes = exts.read_commands_attributes(THIS_FOLDER/'commands_attr.json')  # Global cache for config data
-get_command_attributes = exts.get_command_attributes_builder(_commands_attributes)
+get_command_attributes = exts.get_command_attributes_builder( _commands_attributes)
 
 # TODO: there is a logging error some times
+
 
 class Music(commands.GroupCog):
     """Play songs on a voice channel"""
@@ -33,7 +33,7 @@ class Music(commands.GroupCog):
             # Attention to the custom class in the connect function.
             # This class is now the type of ctx.voice_client
             await destination.connect(cls=CustomVoiceClient)
-        else: 
+        else:
             await ctx.voice_client.move_to(destination)
         await ctx.reply(f'Joined channel {destination.name}')
 
@@ -52,8 +52,7 @@ class Music(commands.GroupCog):
 
         async with ctx.typing():
             # TODO: Remove this AudioSource from here. The CustomVoiceClient should be responsible for handling all
-            audio_source = await AudioSource.create_source(ctx, search)
-            await ctx.voice_client.queue.put(audio_source)
+            await ctx.voice_client.queue.put((ctx, search))
             await ctx.reply(f'Enqueued {search}')
 
     @commands.hybrid_command(**get_command_attributes('pause'))
@@ -79,4 +78,3 @@ class Music(commands.GroupCog):
     async def ensure_voice_state(self, ctx: cc.CustomContext):
         if not ctx.author.voice or not ctx.author.voice.channel:
             raise commands.CommandError('You are not connected to any voice channel.')
-
