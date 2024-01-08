@@ -5,6 +5,7 @@ import signal
 from discord.ext import commands
 
 import extensions as exts
+import custom_context as cc
 from settings import settings
 
 logger = logging.getLogger(__name__)
@@ -42,3 +43,6 @@ class BotYerak(commands.Bot):
         """Called when a command is about to be invoked"""
         # Logs all command calls
         logger.debug(f'Command "{ctx.command.qualified_name}" called on guild "{ctx.guild.name}" by the user "{ctx.author.name}"')
+
+    async def get_context(self, message, *, cls=cc.CustomContext): 
+        return await super().get_context(message, cls=cls)
