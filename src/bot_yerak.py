@@ -4,8 +4,8 @@ import signal
 
 from discord.ext import commands
 
-import extensions as exts
 import custom_context as cc
+import extensions as exts
 from settings import settings
 
 logger = logging.getLogger(__name__)

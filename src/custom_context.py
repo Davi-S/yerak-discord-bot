@@ -1,6 +1,6 @@
 from discord.ext import commands
-from voice_client import CustomVoiceClient
+import custom_voice_client as vc 
 
 # TODO: replace all commands.context with this custom context 
 class CustomContext(commands.Context):
-    voice_client: CustomVoiceClient
+    voice_client: vc.CustomVoiceClient

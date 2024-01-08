@@ -3,10 +3,10 @@ from pathlib import Path
 
 from discord.ext import commands
 
+import bot_yerak as by
 import custom_context as cc
+import custom_voice_client as vc
 import extensions as exts
-import voice_client as vc
-from bot_yerak import BotYerak
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ get_command_attributes = exts.get_command_attributes_builder( _commands_attribut
 class Music(commands.GroupCog):
     """Play songs on a voice channel"""
 
-    def __init__(self, bot: BotYerak):
+    def __init__(self, bot: by.BotYerak):
         self.bot = bot
 
     @commands.hybrid_command(**get_command_attributes('join'))
