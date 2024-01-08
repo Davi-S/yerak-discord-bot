@@ -51,35 +51,35 @@ class CustomVoiceClient(discord.VoiceClient):
         self.on_play_kwargs = on_play_callback_kwargs
 
         self.queue = AudioQueue(20)
-        self.next_event = asyncio.Event()
-        self.looping = False
-        self.current_audio: AudioSource = None
+        self._next = asyncio.Event()
+        self._loop = False
+        self._current_audio: AudioSource = None
 
         self.audio_player_task = self.client.loop.create_task(self.audio_player())
 
     async def audio_player(self):
         while True:
-            self.next_event.clear()
-            if not self.looping:
+            self._next.clear()
+            if not self._loop:
                 # Try to get the next song within 3 minutes.
                 # If no song is added to the queue in time, the player will disconnect due to performance reasons.
                 try:
                     async with timeout(self.timeout):
-                        self.current_audio = await self.queue.get()
+                        self._current_audio = await self.queue.get()
                 except asyncio.TimeoutError:
                     self.client.loop.create_task(self.disconnect())
                     return
 
             # TODO: check and understand this volume part
             # self.current_audio.volume = self.volume
-            self.play(self.current_audio, after=self.play_next)
+            self.play(self._current_audio, after=self.play_next)
             await self.on_play_callback(**self.on_play_kwargs)
-            await self.next_event.wait()
+            await self._next.wait()
 
     def play_next(self, error=None):
         if error:
             raise ce.VoiceError(str(error))
-        self.next_event.set()
+        self._next.set()
 
     def skip(self):
         if self.is_playing():

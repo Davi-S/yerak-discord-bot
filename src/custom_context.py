@@ -1,6 +1,6 @@
-from __future__ import annotations  # TODO: remove this
 from discord.ext import commands
+from voice_client import CustomVoiceClient
 
-# TODO: replace commands.context with this custom context 
+# TODO: replace all commands.context with this custom context 
 class CustomContext(commands.Context):
-    voice_client: CustomVoiceClient  # type: ignore # TODO: fix this hint
+    voice_client: CustomVoiceClient

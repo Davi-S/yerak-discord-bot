@@ -5,9 +5,8 @@ from discord.ext import commands
 
 import custom_context as cc
 import extensions as exts
+import voice_client as vc
 from bot_yerak import BotYerak
-
-from .voice_client import CustomVoiceClient
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +31,7 @@ class Music(commands.GroupCog):
         if ctx.voice_client is None:
             # Attention to the custom class in the connect function.
             # This class is now the type of ctx.voice_client
-            await destination.connect(cls=CustomVoiceClient)
+            await destination.connect(cls=vc.CustomVoiceClient)
         else:
             await ctx.voice_client.move_to(destination)
         await ctx.reply(f'Joined channel {destination.name}')
