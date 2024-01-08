@@ -155,3 +155,5 @@ cython_debug/
 todo.txt
 
 src/settings/.secrets.toml
+
+src/extensions/music/ffmpeg.exe

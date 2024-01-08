@@ -3,4 +3,4 @@ from discord.ext import commands
 
 # TODO: replace commands.context with this custom context 
 class CustomContext(commands.Context):
-    voice_client: CustomVoiceClient  # TODO: fix this hint
+    voice_client: CustomVoiceClient  # type: ignore # TODO: fix this hint
