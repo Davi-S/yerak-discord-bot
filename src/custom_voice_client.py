@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import collections
+import contextlib
 import functools
 import random
 import typing as t
@@ -187,9 +188,12 @@ class AudioQueue(asyncio.Queue[AudioSource]):
     # TODO: test the maxsize
     def _init(self, maxsize) -> None:
         self._queue: t.Deque[AudioSource] = collections.deque()
-               
+    
+    #######################      
     ### ATTENTION BELOW ###
+    #######################
     # Carefully overwriting this method to use async _put
+    # Only changing feel lines to include "await" keyword
     async def put(self, item):
         """Put an item into the queue.
 
@@ -202,20 +206,14 @@ class AudioQueue(asyncio.Queue[AudioSource]):
             try:
                 await putter
             except:
-                putter.cancel()  # Just in case putter is not done yet.
-                try:
-                    # Clean self._putters from canceled putters.
+                putter.cancel()
+                with contextlib.suppress(ValueError):
                     self._putters.remove(putter)
-                except ValueError:
-                    # The putter could be removed from self._putters by a
-                    # previous get_nowait call.
-                    pass
                 if not self.full() and not putter.cancelled():
-                    # We were woken up by get_nowait(), but can't take
-                    # the call.  Wake up the next in line.
                     self._wakeup_next(self._putters)
                 raise
-        return await self.put_nowait(item)
+        # Calling here with "await" keyword
+        return await self.put_nowait(item)  
 
     async def put_nowait(self, item):
         """Put an item into the queue without blocking.
@@ -224,11 +222,14 @@ class AudioQueue(asyncio.Queue[AudioSource]):
         """
         if self.full():
             raise QueueFull
+        # calling here with "await" keyword
         await self._put(item)
         self._unfinished_tasks += 1
         self._finished.clear()
         self._wakeup_next(self._getters)
+    #######################
     ### ATTENTION ABOVE ###
+    #######################
 
     async def _put(self, item: AudioSource | tuple[commands.Context, str]) -> None:
         if isinstance(item, AudioSource):
