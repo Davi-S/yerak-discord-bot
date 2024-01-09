@@ -143,7 +143,7 @@ class AudioSource(discord.PCMVolumeTransformer):
             process_info = next((entry for entry in data['entries'] if entry), None)
             if process_info is None:
                 raise ce.YTDLError(f"Couldn\'t find anything that matches `{search}`")
-        
+
         webpage_url = process_info['webpage_url']
         with youtube_dl.YoutubeDL(ytdl_options) as ytdl:
             partial = functools.partial(ytdl.extract_info, webpage_url, download=False)
@@ -151,7 +151,7 @@ class AudioSource(discord.PCMVolumeTransformer):
 
         if processed_info is None:
             raise ce.YTDLError(f"Couldn\'t fetch `{webpage_url}`")
-        
+
         if 'entries' not in processed_info:
             info = processed_info
         else:
@@ -189,8 +189,8 @@ class AudioQueue(asyncio.Queue[AudioSource]):
     # TODO: test the maxsize
     def _init(self, maxsize) -> None:
         self._queue: t.Deque[AudioSource] = collections.deque()
-    
-    #######################      
+
+    #######################
     ### ATTENTION BELOW ###
     #######################
     # Carefully overwriting this method to use async _put
@@ -214,7 +214,7 @@ class AudioQueue(asyncio.Queue[AudioSource]):
                     self._wakeup_next(self._putters)
                 raise
         # Calling here with "await" keyword
-        return await self.put_nowait(item)  
+        return await self.put_nowait(item)
 
     async def put_nowait(self, item):
         """Put an item into the queue without blocking.
