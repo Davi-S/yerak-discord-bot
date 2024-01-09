@@ -75,8 +75,6 @@ class CustomVoiceClient(discord.VoiceClient):
                     self.client.loop.create_task(self.disconnect())
                     return
 
-            # TODO: check and understand this volume part
-            # self.current_audio.volume = self.volume
             self.play(self._current_audio, after=self.play_next)
             await self.on_play_callback(**self.on_play_kwargs)
             await self._next.wait()
