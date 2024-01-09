@@ -55,6 +55,6 @@ async def manage_extensions(bot: commands.Bot, extensions: list[str], action: st
             logger.info(f'Extension "{extension}" {action}ed successfully')
         except commands.ExtensionError as error:
             fail.append((extension, error))
-            logger.error(f'Failed to {action} the extension "{extension}" due to error: {error}')
+            logger.exception(f'Failed to {action} the extension "{extension}" due to error: {error}')
 
     return {'success': success, 'fail': fail}

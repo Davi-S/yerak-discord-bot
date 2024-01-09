@@ -6,6 +6,7 @@ from discord.ext import commands
 
 import bot_yerak as by
 import custom_context as cc
+import custom_errors as ce
 from settings import settings
 
 logger = logging.getLogger(__name__)
@@ -51,8 +52,7 @@ class ErrorHandler(commands.Cog):
         )
         return await method(ctx, error)
 
-    async def _unhandled_error(self, ctx: cc.CustomContext, error: commands.CommandError) -> None:
-        logger.error(f'Unhandled Exception: {error}')
+    async def _unhandled_error(self, ctx: cc.CustomContext, error: commands.CommandError) -> None:        
         # Warn developers
         error_message = {
             'Error Class Name': error.__class__.__name__,
@@ -69,8 +69,13 @@ class ErrorHandler(commands.Cog):
             if user := await self.bot.fetch_user(int(developer_id)):
                 with contextlib.suppress(discord.errors.Forbidden):
                     await user.send(embed=embed)
-        # raise error
-        raise error
+                    
+        # Log the error
+        # Using try except to log error with traceback (logger.exception)
+        try:
+            raise ce.UnhandledError()
+        except ce.UnhandledError:
+            logger.exception(f'Unhandled Error: {error}')
 
     async def _handle_NotAuthorizedUser(self, ctx: cc.CustomContext, error: commands.CommandError) -> None:
         logger.warning(f'User "{ctx.author.name}" with id "{ctx.author.id}" tried to use the command "{ctx.command.name}"')

@@ -183,7 +183,7 @@ class Rave(commands.GroupCog):
         if isinstance(error, (AttributeError, discord.errors.NotFound)):
             pass
         else:
-            logger.error(f'Error on a task: {error}')
+            logger.exception(f'Error on a task: {error}')
             
     async def on_tasks_before_loop(self, _):
         # Because this function is not being set by a decorator, it receives two "self" arguments when called. Using the "_" to ignore the second "self" argument

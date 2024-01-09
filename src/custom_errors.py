@@ -12,3 +12,7 @@ class YTDLError(commands.CommandError):
 
 class VoiceError(commands.CommandError):
     pass
+
+
+class UnhandledError(commands.CommandError):
+    pass
