@@ -29,6 +29,7 @@ class BotYerak(commands.Bot):
 
     async def setup_hook(self) -> None:
         """Setup the bot"""
+        self.initial_extensions.remove('rave')
         await exts.manage_extensions(self, self.initial_extensions, 'load')
 
         # # Sync application commands with testing guilds
