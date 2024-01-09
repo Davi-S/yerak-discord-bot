@@ -2,7 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from bot_yerak import BotYerak
+import bot_yerak as by
 
 from .help_cls import MyHelp
 
@@ -15,7 +15,7 @@ _help_command_attrs = {
 class Help(commands.Cog):
     """The a place for the help command"""
 
-    def __init__(self, bot: BotYerak):
+    def __init__(self, bot: by.BotYerak):
         self.bot = bot
         # Set the custom help command
         self._original_help_command = bot.help_command

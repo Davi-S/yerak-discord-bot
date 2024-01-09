@@ -1,5 +1,7 @@
 import discord
 from discord.ext import commands
+
+import custom_context as cc
 from settings import settings
 
 
@@ -10,7 +12,7 @@ class MyHelp(commands.HelpCommand):
         self.no_category_description = 'Other commands'
         self.color_hex = 0x175639
         
-    async def prepare_help_command(self, ctx: commands.Context, command: str) -> None:
+    async def prepare_help_command(self, ctx: cc.CustomContext, command: str) -> None:
         """Prepare the help command before it does anything"""
         # Setting the context for Interaction based calls. In these interactions the context is not set automatically
         if not self.context:

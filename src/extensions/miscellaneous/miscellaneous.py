@@ -3,8 +3,8 @@ from pathlib import Path
 
 from discord.ext import commands
 
-from bot_yerak import BotYerak
-
+import bot_yerak as by
+import custom_context as cc
 import extensions as exts
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ get_command_attributes = exts.get_command_attributes_builder(_commands_attribute
 class Miscellaneous(commands.GroupCog):
     """Commands that do not fit any other category"""
 
-    def __init__(self, bot: BotYerak) -> None:
+    def __init__(self, bot: by.BotYerak) -> None:
         self.bot = bot
         
     def cog_load(self) -> None:
@@ -28,9 +28,9 @@ class Miscellaneous(commands.GroupCog):
         del _commands_attributes
 
     @commands.hybrid_command(**get_command_attributes('ping'))
-    async def ping(self, ctx: commands.Context) -> None:
+    async def ping(self, ctx: cc.CustomContext) -> None:
         await ctx.reply(f'Pong! -> {int(self.bot.latency * 1000)}ms')
         
     @commands.hybrid_command(**get_command_attributes('hello'))
-    async def hello(self, ctx: commands.Context) -> None:
+    async def hello(self, ctx: cc.CustomContext) -> None:
         await ctx.send(f'Hi, {ctx.author.mention}')
