@@ -20,12 +20,13 @@ import custom_errors as ce
 THIS_FOLDER = Path(__file__).parent
 FFMPEG_PATH = THIS_FOLDER/'ffmpeg.exe'
 
-# FFMPEG_OPTIONS were causing some issue.
+# TODO: FFMPEG_OPTIONS bellow were causing some issue. figure out why
 # FFMPEG_OPTIONS = {
 #     'executable': str(FFMPEG_PATH),
 #     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
 #     'options': '-vn',
 # }
+# TODO: put some good parameter here is needed
 FFMPEG_OPTIONS = {}
 
 YTDL_OPTIONS = {
