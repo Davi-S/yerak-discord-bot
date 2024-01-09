@@ -164,9 +164,10 @@ class AudioQueue(asyncio.Queue[AudioSource]):
         if isinstance(item, AudioSource):
             self._queue.append(item)
             return
-        if isinstance(item, tuple[commands.Context, str]):
-            source = AudioSource.create_source(item[0], item[1])
+        if isinstance(item, tuple) and isinstance(item[0], commands.Context) and isinstance(item[1], str):
+            source = await AudioSource.create_source(item[0], item[1])
             self._queue.append(source)
+            return
         raise TypeError(f'Cannot store type {type(item)} in this queue')
 
     def clear(self) -> None:
