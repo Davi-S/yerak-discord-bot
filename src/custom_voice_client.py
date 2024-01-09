@@ -53,8 +53,9 @@ class CustomVoiceClient(discord.VoiceClient):
         if on_play_callback_kwargs is None:
             on_play_callback_kwargs = {}
         self.on_play_callback = on_play_callback
-        self.on_play_kwargs = on_play_callback_kwargs
+        self.on_play_callback_kwargs = on_play_callback_kwargs
 
+        # TODO: attention to queue maxsize
         self.queue = AudioQueue(20)
         self._next = asyncio.Event()
         self._loop = False
@@ -76,7 +77,8 @@ class CustomVoiceClient(discord.VoiceClient):
                     return
 
             self.play(self._current_audio, after=self.play_next)
-            await self.on_play_callback(**self.on_play_kwargs)
+            # TODO: call this function with right arguments
+            # await self.on_play_callback()
             await self._next.wait()
 
     def play_next(self, error=None):
@@ -94,8 +96,7 @@ class CustomVoiceClient(discord.VoiceClient):
         self.queue.clear()
         return await super().disconnect(force=force)
 
-    async def _default_on_play_callback(self, **kwargs):
-        # TODO add args too (not only kwargs)
+    async def _default_on_play_callback(self, *args, **kwargs):
         return
 
     def __del__(self):
