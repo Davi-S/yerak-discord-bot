@@ -50,7 +50,6 @@ class Music(commands.GroupCog):
             await ctx.invoke(self.join)
 
         async with ctx.typing():
-            # TODO: Remove this AudioSource from here. The CustomVoiceClient should be responsible for handling all
             await ctx.voice_client.queue.put((ctx, search))
             await ctx.reply(f'Enqueued {search}')
 
