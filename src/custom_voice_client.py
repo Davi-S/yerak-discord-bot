@@ -159,8 +159,50 @@ class AudioQueue(asyncio.Queue[AudioSource]):
     # TODO: test the maxsize
     def _init(self, maxsize) -> None:
         self._queue: t.Deque[AudioSource] = collections.deque()
+               
+    ### ATTENTION BELOW ###
+    # Carefully overwriting this method to use async _put
+    async def put(self, item):
+        """Put an item into the queue.
 
-    def _put(self, item: AudioSource | tuple[commands.Context, str]) -> None:
+        Put an item into the queue. If the queue is full, wait until a free
+        slot is available before adding item.
+        """
+        while self.full():
+            putter = self._get_loop().create_future()
+            self._putters.append(putter)
+            try:
+                await putter
+            except:
+                putter.cancel()  # Just in case putter is not done yet.
+                try:
+                    # Clean self._putters from canceled putters.
+                    self._putters.remove(putter)
+                except ValueError:
+                    # The putter could be removed from self._putters by a
+                    # previous get_nowait call.
+                    pass
+                if not self.full() and not putter.cancelled():
+                    # We were woken up by get_nowait(), but can't take
+                    # the call.  Wake up the next in line.
+                    self._wakeup_next(self._putters)
+                raise
+        return await self.put_nowait(item)
+
+    async def put_nowait(self, item):
+        """Put an item into the queue without blocking.
+
+        If no free slot is immediately available, raise QueueFull.
+        """
+        if self.full():
+            raise QueueFull
+        await self._put(item)
+        self._unfinished_tasks += 1
+        self._finished.clear()
+        self._wakeup_next(self._getters)
+    ### ATTENTION ABOVE ###
+
+    async def _put(self, item: AudioSource | tuple[commands.Context, str]) -> None:
         if isinstance(item, AudioSource):
             self._queue.append(item)
             return
