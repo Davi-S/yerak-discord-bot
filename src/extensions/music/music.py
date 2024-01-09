@@ -75,4 +75,4 @@ class Music(commands.GroupCog):
     @play.before_invoke
     async def ensure_voice_state(self, ctx: cc.CustomContext):
         if not ctx.author.voice or not ctx.author.voice.channel:
-            raise commands.CommandError('You are not connected to any voice channel.')
+            raise commands.CommandError('You are not connected to a voice channel.')

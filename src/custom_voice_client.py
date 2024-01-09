@@ -130,8 +130,7 @@ class AudioSource(discord.PCMVolumeTransformer):
             data = await asyncio.get_event_loop().run_in_executor(None, partial)
 
         if data is None:
-            raise ce.YTDLError(
-                f'Couldn\'t find anything that matches "{search}"')
+            raise ce.YTDLError(f'Couldn\'t find anything that matches "{search}"')
 
         context_data = {
             'requester': ctx.author,
