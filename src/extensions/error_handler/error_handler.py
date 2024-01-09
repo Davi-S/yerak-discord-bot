@@ -53,6 +53,7 @@ class ErrorHandler(commands.Cog):
 
     async def _unhandled_error(self, ctx: cc.CustomContext, error: commands.CommandError) -> None:
         logger.error(f'Unhandled Exception: {error}')
+        # Warn developers
         error_message = {
             'Error Class Name': error.__class__.__name__,
             'Error Message': str(error),
@@ -61,15 +62,15 @@ class ErrorHandler(commands.Cog):
             'User': f'{ctx.author.name} -> {ctx.author.id}',
             'Cog': ctx.command.cog.qualified_name if ctx.command and ctx.command.cog else 'None',
         }
-
         embed = discord.Embed(title='Unhandled Exception')
         for key, value in error_message.items():
             embed.add_field(name=key, value=value, inline=False)
-
         for developer_id in settings.users_developers_ids:
             if user := await self.bot.fetch_user(int(developer_id)):
                 with contextlib.suppress(discord.errors.Forbidden):
                     await user.send(embed=embed)
+        # raise error
+        raise error
 
     async def _handle_NotAuthorizedUser(self, ctx: cc.CustomContext, error: commands.CommandError) -> None:
         logger.warning(f'User "{ctx.author.name}" with id "{ctx.author.id}" tried to use the command "{ctx.command.name}"')
