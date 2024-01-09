@@ -17,7 +17,24 @@ _commands_attributes = exts.read_commands_attributes(THIS_FOLDER/'commands_attr.
 get_command_attributes = exts.get_command_attributes_builder( _commands_attributes)
 
 # TODO: there is a logging error some times
-
+# TODO: COMMANDS
+#enter
+#leave
+#addplaylist
+#play
+#pause
+#resume
+#skip
+#stop
+#volume
+#goto 
+#lyrics
+#loop
+#nowplaying
+#queue
+#clear
+#shuffle
+#delete
 
 class Music(commands.GroupCog):
     """Play songs on a voice channel"""
@@ -64,12 +81,6 @@ class Music(commands.GroupCog):
         if ctx.voice_client and not ctx.voice_client.is_playing():
             ctx.voice_client.resume()
             await ctx.reply('Resumed')
-
-    @commands.hybrid_command(**get_command_attributes('stop'))
-    async def stop(self, ctx: cc.CustomContext):
-        if ctx.voice_client.is_playing():
-            ctx.voice_client.stop()
-            await ctx.reply('Stopped')
 
     @join.before_invoke
     @play.before_invoke
