@@ -1,13 +1,14 @@
 from discord.ext import commands
+import discord
 
 
 class NotAuthorizedUser(commands.CommandError):
     pass
 
 
-class YTDLError(Exception):
+class YTDLError(commands.CommandError):
     pass
 
 
-class VoiceError(Exception):
+class VoiceError(commands.CommandError):
     pass
