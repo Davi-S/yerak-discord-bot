@@ -124,20 +124,44 @@ class AudioSource(discord.PCMVolumeTransformer):
 
     @classmethod
     async def create_source(cls, ctx: commands.Context, search: str, ytdl_options: dict = YTDL_OPTIONS, ffmpeg_options: dict = FFMPEG_OPTIONS, volume: float = 0.5):
-        # TODO: check for errors in this method
         with youtube_dl.YoutubeDL(ytdl_options) as ytdl:
-            partial = functools.partial(ytdl.extract_info, search, download=False)
+            partial = functools.partial(ytdl.extract_info, search, download=False, process=False)
             data = await asyncio.get_event_loop().run_in_executor(None, partial)
 
         if data is None:
             raise ce.YTDLError(f'Couldn\'t find anything that matches "{search}"')
+
+        if 'entries' not in data:
+            process_info = data
+        else:
+            process_info = next((entry for entry in data['entries'] if entry), None)
+            if process_info is None:
+                raise ce.YTDLError(f"Couldn\'t find anything that matches `{search}`")
+        
+        webpage_url = process_info['webpage_url']
+        with youtube_dl.YoutubeDL(ytdl_options) as ytdl:
+            partial = functools.partial(ytdl.extract_info, webpage_url, download=False)
+            processed_info = await asyncio.get_event_loop().run_in_executor(None, partial)
+
+        if processed_info is None:
+            raise ce.YTDLError(f"Couldn\'t fetch `{webpage_url}`")
+        
+        if 'entries' not in processed_info:
+            info = processed_info
+        else:
+            info = None
+            while info is None:
+                try:
+                    info = processed_info['entries'].pop(0)
+                except IndexError as e:
+                    raise ce.YTDLError(f"Couldn\'t retrieve any matches for `{webpage_url}`") from e
 
         context_data = {
             'requester': ctx.author,
             'channel': ctx.channel
         }
 
-        return cls(discord.FFmpegPCMAudio(data['url'], **ffmpeg_options), volume=volume, source_data=data | context_data)
+        return cls(discord.FFmpegPCMAudio(info['url'], **ffmpeg_options), volume=volume, source_data=info | context_data)
 
     @staticmethod
     def parse_duration(duration: int):
