@@ -18,23 +18,23 @@ get_command_attributes = exts.get_command_attributes_builder( _commands_attribut
 
 # TODO: there is a logging error some times
 # TODO: COMMANDS
-#enter
-#leave
-#addplaylist
-#play
-#pause
-#resume
-#skip
-#stop
-#volume
-#goto 
-#lyrics
-#loop
-#nowplaying
-#queue
-#clear
-#shuffle
-#delete
+# ☑ enter
+# ☑ leave
+# ☑ play/enqueue
+# addplaylist
+# ☑ pause
+# ☑ resume
+# stop
+# skip
+# volume
+# goto 
+# lyrics
+# loop
+# nowplaying
+# queue
+# clear
+# shuffle
+# delete
 
 class Music(commands.GroupCog):
     """Play songs on a voice channel"""
@@ -55,35 +55,52 @@ class Music(commands.GroupCog):
 
     @commands.hybrid_command(**get_command_attributes('leave'))
     async def leave(self, ctx: cc.CustomContext):
-        if voice := ctx.voice_client:
-            await voice.disconnect()
-            await ctx.reply('Disconnected')
-            return
-        await ctx.reply('Not connected to any voice channel')
+        await ctx.voice_client.disconnect()
+        await ctx.reply('Disconnected')
 
     @commands.hybrid_command(**get_command_attributes('play'))
     async def play(self, ctx: cc.CustomContext, *, search: str):
-        if not ctx.voice_client:
-            await ctx.invoke(self.join)
-
         async with ctx.typing():
+            # Put the audio in the queue. If this is the only audio in the queue, it will start automatically
             await ctx.voice_client.queue.put((ctx, search))
-            await ctx.reply(f'Enqueued {search}')
+        # TODO: get the audio that was just added to show its title
+        await ctx.reply(f'Enqueued {search}')
 
     @commands.hybrid_command(**get_command_attributes('pause'))
     async def pause(self, ctx: cc.CustomContext):
-        if ctx.voice_client and ctx.voice_client.is_playing():
-            ctx.voice_client.pause()
-            await ctx.reply('Paused')
+        ctx.voice_client.pause()
+        await ctx.reply('Paused')
 
     @commands.hybrid_command(**get_command_attributes('resume'))
     async def resume(self, ctx: cc.CustomContext):
-        if ctx.voice_client and not ctx.voice_client.is_playing():
-            ctx.voice_client.resume()
-            await ctx.reply('Resumed')
-
+        ctx.voice_client.resume()
+        await ctx.reply('Resumed')
+    
+    @commands.hybrid_command(**get_command_attributes('stop'))
+    async def stop(self, ctx: cc.CustomContext):
+        pass
+    
+    # TODO: use "checks"
+    # TODO: handle errors raised here
     @join.before_invoke
-    @play.before_invoke
-    async def ensure_voice_state(self, ctx: cc.CustomContext):
+    async def ensure_author_voice(self, ctx: cc.CustomContext):
         if not ctx.author.voice or not ctx.author.voice.channel:
             raise commands.CommandError('You are not connected to a voice channel.')
+
+    @play.before_invoke
+    @leave.before_invoke
+    async def ensure_bot_voice(self, ctx: cc.CustomContext):
+        if not ctx.voice_client:
+            raise commands.CommandError('Bot it not connected to a voice channel')
+    
+    @pause.before_invoke
+    async def ensure_bot_playing(self, ctx: cc.CustomContext):
+        voice = ctx.voice_client
+        if (not voice) or (not voice.is_playing()):
+            raise commands.CommandError('Bot it not playing anything')
+    
+    @resume.before_invoke
+    async def ensure_bot_paused(self, ctx: cc.CustomContext):
+        voice = ctx.voice_client
+        if (not voice) or (not ctx.voice_client.is_paused()):
+            raise commands.CommandError('Bot it not paused')
