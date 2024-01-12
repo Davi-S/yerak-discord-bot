@@ -108,7 +108,3 @@ class Music(commands.GroupCog):
     async def resume(self, ctx: cc.CustomContext):
         ctx.voice_client.resume()
         await ctx.reply('Resumed')
-
-    @commands.hybrid_command(**get_command_attributes('stop'))
-    async def stop(self, ctx: cc.CustomContext):
-        pass
