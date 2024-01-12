@@ -21,13 +21,12 @@ THIS_FOLDER = Path(__file__).parent
 FFMPEG_PATH = THIS_FOLDER/'ffmpeg.exe'
 
 # TODO: FFMPEG_OPTIONS bellow were causing some issue. figure out why
-# FFMPEG_OPTIONS = {
-#     'executable': str(FFMPEG_PATH),
-#     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-#     'options': '-vn',
-# }
-# TODO: put some good parameter here is needed
-FFMPEG_OPTIONS = {}
+# TODO: put some good parameter here if needed
+FFMPEG_OPTIONS = {
+    # 'executable': str(FFMPEG_PATH),
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+    'options': '-vn',
+}
 
 YTDL_OPTIONS = {
     'audioformat': 'mp3',
@@ -87,19 +86,18 @@ class CustomVoiceClient(discord.VoiceClient):
         if error:
             raise ce.VoiceError(str(error))
         self._next.set()
-
-    def skip(self):
-        if self.is_playing():
-            # Stopping the current audio will trigger the play_next method and start the next song if any available on the queue
-            self.stop()
-
-    async def disconnect(self, *, force: bool = False) -> None:
-        # TODO: check what happens if the queue if not cleared before disconnecting
-        self.queue.clear()
-        return await super().disconnect(force=force)
-
+        
     async def _default_on_play_callback(self, *args, **kwargs):
         return
+
+    def stop(self) -> None:
+        self.queue.clear()
+        return super().stop()
+
+    async def disconnect(self, *, force: bool = False) -> None:
+        # TODO: check what happens if the queue is not cleared before disconnecting
+        self.queue.clear()
+        return await super().disconnect(force=force)
 
     def __del__(self):
         self.audio_player_task.cancel()
