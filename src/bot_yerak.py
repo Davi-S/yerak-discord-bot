@@ -23,8 +23,8 @@ class BotYerak(commands.Bot):
 
     async def close(self, *args, **kwargs) -> None:
         """Exit handler for termination signals"""
-        # TODO: fix "Unclosed connector" and "Unclosed client session" error
         logger.warning('Closing bot')
+        await self.http.close()
         await super().close()
 
     async def setup_hook(self) -> None:
