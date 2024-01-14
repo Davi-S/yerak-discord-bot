@@ -1,3 +1,23 @@
 {
-
+    "join": {
+        "help": "Makes the bot join your voice channel. You need to be in a voice channel.",
+        "brief": "Makes the bot join your voice channel."
+    },
+    "leave": {
+        "help": "Makes the bot disconnect from its voice channel.",
+        "brief": "Makes the bot leave its voice channel."
+    },
+    "play": {
+        "help": "Make the bot play the given song. If the bot is not connected to a voice channel, it will try to connect on yours before playing. If a song is being played, it will put the given song on a queue to be played latter.",
+        "brief": "Make the bot play the given song.",
+        "aliases": ["enqueue"]
+    },
+    "pause": {
+        "help": "Pauses the current song if any is being played.",
+        "brief": "Pauses the current song."
+    },
+    "resume": {
+        "help": "Pauses the current song if the current song is paused.",
+        "brief": "Resume the current song."
+    }
 }
