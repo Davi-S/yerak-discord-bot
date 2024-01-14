@@ -22,6 +22,9 @@ class MyHelp(commands.HelpCommand):
         # Get categories (cogs)
         categories = []
         for cog, commands_list in mapping.items():
+            # TODO: filter commands without verifying checks, just verifying "show_hidden"
+            # The verification on the checks are causing commands like "pause a song" to not appear on the bot help just because there is not song being played.
+            # This is not the wanted behavior.
             if commands_count := len(await self.filter_commands(commands_list)):
                 category_name = cog.qualified_name if cog else self.no_category_qualified_name
                 category_description = cog.description if cog else self.no_category_description

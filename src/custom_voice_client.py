@@ -167,6 +167,8 @@ class AudioSource(discord.PCMVolumeTransformer):
 
         return cls(discord.FFmpegPCMAudio(info['url'], **ffmpeg_options), volume=volume, source_data=info | context_data)
 
+    # TODO: bulk AudioSource creation for playlists
+
     @staticmethod
     def parse_duration(duration: int):
         units = [

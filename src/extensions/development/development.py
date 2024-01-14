@@ -36,8 +36,7 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
             raise ce.NotAuthorizedUser('Some user tried to execute a developer\'s command')
 
     @commands.command(**get_command_attributes('reload'))
-    async def reload(self, ctx: cc.CustomContext,
-        *,
+    async def reload(self, ctx: cc.CustomContext, *,
         extensions: str = commands.parameter(**get_command_parameters('reload', 'extensions'))
     ) -> None:
         to_reload = [ext.split('.')[-1] for ext in self.bot.extensions.keys()] if extensions[0] == 'all' else extensions.split(' ')
@@ -46,8 +45,7 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
         await ctx.reply(self._format_extensions_message(result, action))
 
     @commands.command(**get_command_attributes('load'))
-    async def load(self, ctx: cc.CustomContext,
-        *,
+    async def load(self, ctx: cc.CustomContext, *,
         extensions: str = commands.parameter(**get_command_parameters('load', 'extensions'))
     ) -> None:
         action = 'load'
@@ -55,8 +53,7 @@ class Development(commands.Cog, command_attrs=dict(hidden=True)):
         await ctx.reply(self._format_extensions_message(result, action))
 
     @commands.command(**get_command_attributes('unload'))
-    async def unload(self, ctx: cc.CustomContext,
-        *,
+    async def unload(self, ctx: cc.CustomContext, *,
         extensions: str = commands.parameter(**get_command_parameters('unload', 'extensions'))
     ) -> None:
         action = 'unload'
