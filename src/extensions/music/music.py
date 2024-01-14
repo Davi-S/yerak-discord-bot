@@ -1,7 +1,8 @@
 import logging
+import typing as t
 from pathlib import Path
-import discord
 
+import discord
 from discord.ext import commands
 
 import bot_yerak as by
@@ -20,7 +21,7 @@ get_command_attributes = exts.get_command_attributes_builder(_commands_attribute
 
 
 # CHECKS
-def ensure_author_voice():
+def ensure_author_voice() -> t.Callable[[cc.CustomContext], bool]:
     def predicate(ctx: cc.CustomContext):
         if ctx.author.voice and ctx.author.voice.channel:
             return True
@@ -28,7 +29,7 @@ def ensure_author_voice():
     return commands.check(predicate)
 
 
-def ensure_bot_voice():
+def ensure_bot_voice() -> t.Callable[[cc.CustomContext], bool]:
     def predicate(ctx: cc.CustomContext):
         if ctx.voice_client:
             return True
@@ -36,14 +37,14 @@ def ensure_bot_voice():
     return commands.check(predicate)
 
 
-def ensure_bot_playing():
+def ensure_bot_playing() -> t.Callable[[cc.CustomContext], bool]:
     def predicate(ctx: cc.CustomContext):
         voice = ctx.voice_client
         return voice and voice.is_playing()
     return commands.check(predicate)
 
 
-def ensure_bot_paused():
+def ensure_bot_paused() -> t.Callable[[cc.CustomContext], bool]:
     def predicate(ctx: cc.CustomContext):
         voice = ctx.voice_client
         return voice and ctx.voice_client.is_paused()
@@ -73,12 +74,12 @@ def ensure_bot_paused():
 class Music(commands.GroupCog):
     """Play songs on a voice channel"""
 
-    def __init__(self, bot: by.BotYerak):
+    def __init__(self, bot: by.BotYerak) -> None:
         self.bot = bot
 
     @commands.hybrid_command(**get_command_attributes('join'))
     @ensure_author_voice()
-    async def join(self, ctx: cc.CustomContext):
+    async def join(self, ctx: cc.CustomContext) -> None:
         destination = ctx.author.voice.channel
         if ctx.voice_client is None:
             # Attention to the custom class in the connect function.
@@ -89,7 +90,7 @@ class Music(commands.GroupCog):
         await ctx.reply(f'Joined channel {destination.name}')
     
     @join.error
-    async def on_join_error(self, ctx: cc.CustomContext, error: discord.DiscordException):
+    async def on_join_error(self, ctx: cc.CustomContext, error: discord.DiscordException) -> None:
         if isinstance(error, ce.NoVoiceChannelError):
             await ctx.reply('You must be in a voice channel for the bot to join in')
         else:
@@ -97,13 +98,13 @@ class Music(commands.GroupCog):
 
     @commands.hybrid_command(**get_command_attributes('leave'))
     @ensure_bot_voice()
-    async def leave(self, ctx: cc.CustomContext):
+    async def leave(self, ctx: cc.CustomContext) -> None:
         channel_name = ctx.voice_client.channel.name
         await ctx.voice_client.disconnect()
         await ctx.reply(f'Disconnected from {channel_name}')
     
     @leave.error
-    async def on_leave_error(self, ctx: cc.CustomContext, error: discord.DiscordException):
+    async def on_leave_error(self, ctx: cc.CustomContext, error: discord.DiscordException) -> None:
         if isinstance(error, ce.NoVoiceChannelError):
             await ctx.reply('The bot is not connected to any voice channel')
         else:
@@ -111,7 +112,7 @@ class Music(commands.GroupCog):
 
     @commands.hybrid_command(**get_command_attributes('play'))
     @ensure_bot_voice()
-    async def play(self, ctx: cc.CustomContext, *, search: str):
+    async def play(self, ctx: cc.CustomContext, *, search: str) -> None:
         async with ctx.typing():
             # Put the audio in the queue. If this is the only audio in the queue, it will start automatically
             await ctx.voice_client.queue.put((ctx, search))
@@ -119,7 +120,7 @@ class Music(commands.GroupCog):
         await ctx.reply(f'Enqueued {search}')
         
     @play.error
-    async def on_play_error(self, ctx: cc.CustomContext, error: discord.DiscordException):
+    async def on_play_error(self, ctx: cc.CustomContext, error: discord.DiscordException) -> None:
         # sourcery skip: remove-unnecessary-else, swap-if-else-branches
         if isinstance(error, ce.NoVoiceChannelError):
             # Try to invoke a join command and invoke the play command again
@@ -140,12 +141,12 @@ class Music(commands.GroupCog):
 
     @commands.hybrid_command(**get_command_attributes('pause'))
     @ensure_bot_playing()
-    async def pause(self, ctx: cc.CustomContext):
+    async def pause(self, ctx: cc.CustomContext) -> None:
         ctx.voice_client.pause()
         await ctx.reply('Paused')
         
     @pause.error
-    async def on_pause_error(self, ctx: cc.CustomContext, error: discord.DiscordException):
+    async def on_pause_error(self, ctx: cc.CustomContext, error: discord.DiscordException) -> None:
         if isinstance(error, commands.CheckFailure):
             await ctx.reply('The bot is not playing anything')
         else:
@@ -153,12 +154,12 @@ class Music(commands.GroupCog):
 
     @commands.hybrid_command(**get_command_attributes('resume'))
     @ensure_bot_paused()
-    async def resume(self, ctx: cc.CustomContext):
+    async def resume(self, ctx: cc.CustomContext) -> None:
         ctx.voice_client.resume()
         await ctx.reply('Resumed')
 
     @resume.error
-    async def on_resume_error(self, ctx: cc.CustomContext, error: discord.DiscordException):
+    async def on_resume_error(self, ctx: cc.CustomContext, error: discord.DiscordException) -> None:
         if isinstance(error, commands.CheckFailure):
             await ctx.reply('The bot is not paused')
         else:
