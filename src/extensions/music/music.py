@@ -18,6 +18,7 @@ FFMPEG_PATH = THIS_FOLDER/'ffmpeg.exe'
 
 _commands_attributes = exts.read_commands_attributes(THIS_FOLDER/'commands_attr.json')  # Global cache for config data
 get_command_attributes = exts.get_command_attributes_builder(_commands_attributes)
+get_command_parameters = exts.get_command_parameters_builder(_commands_attributes)
 
 
 # CHECKS
@@ -112,7 +113,9 @@ class Music(commands.GroupCog):
 
     @commands.hybrid_command(**get_command_attributes('play'))
     @ensure_bot_voice()
-    async def play(self, ctx: cc.CustomContext, *, search: str) -> None:
+    async def play(self, ctx: cc.CustomContext, *,
+        search: str = commands.parameter(**get_command_parameters('play', 'search'))
+    ) -> None:
         async with ctx.typing():
             # Put the audio in the queue. If this is the only audio in the queue, it will start automatically
             await ctx.voice_client.queue.put((ctx, search))

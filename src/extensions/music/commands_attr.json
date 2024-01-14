@@ -10,7 +10,12 @@
     "play": {
         "help": "Make the bot play the given song. If the bot is not connected to a voice channel, it will try to connect on yours before playing. If a song is being played, it will put the given song on a queue to be played latter.",
         "brief": "Make the bot play the given song.",
-        "aliases": ["enqueue"]
+        "aliases": ["enqueue"],
+        "parameters": {
+            "search": {
+                "description": "The song to play. Can be a name or a URL. Only takes the first song of a playlist"
+            }
+        }
     },
     "pause": {
         "help": "Pauses the current song if any is being played.",
