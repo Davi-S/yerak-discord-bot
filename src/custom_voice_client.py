@@ -64,7 +64,7 @@ class CustomVoiceClient(discord.VoiceClient):
 
         self.audio_player_task = self.client.loop.create_task(self.audio_player())
 
-    async def audio_player(self):
+    async def audio_player(self) -> None:
         while True:
             self._next.clear()
             if not self._loop:
@@ -82,12 +82,12 @@ class CustomVoiceClient(discord.VoiceClient):
             # await self.on_play_callback()
             await self._next.wait()
 
-    def play_next(self, error=None):
+    def play_next(self, error=None) -> None:
         if error:
             raise ce.VoiceError(str(error))
         self._next.set()
         
-    async def _default_on_play_callback(self, *args, **kwargs):
+    async def _default_on_play_callback(self, *args, **kwargs) -> None:
         return
 
     def stop(self) -> None:
@@ -99,12 +99,12 @@ class CustomVoiceClient(discord.VoiceClient):
         self.queue.clear()
         return await super().disconnect(force=force)
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.audio_player_task.cancel()
 
 
 class AudioSource(discord.PCMVolumeTransformer):
-    def __init__(self, original: discord.FFmpegPCMAudio, volume: float, *, source_data: dict = None):
+    def __init__(self, original: discord.FFmpegPCMAudio, volume: float, *, source_data: dict = None) -> None:
         super().__init__(original, volume)
         # Metadata about the audio
         # TODO: review this data and keep only the necessary
@@ -127,7 +127,7 @@ class AudioSource(discord.PCMVolumeTransformer):
         self.stream_url = source_data.get('url')
 
     @classmethod
-    async def create_source(cls, ctx: commands.Context, search: str, ytdl_options: dict = YTDL_OPTIONS, ffmpeg_options: dict = FFMPEG_OPTIONS, volume: float = 0.5):
+    async def create_source(cls, ctx: commands.Context, search: str, ytdl_options: dict = YTDL_OPTIONS, ffmpeg_options: dict = FFMPEG_OPTIONS, volume: float = 0.5) -> AudioSource:
         with youtube_dl.YoutubeDL(ytdl_options) as ytdl:
             partial = functools.partial(ytdl.extract_info, search, download=False, process=False)
             data = await asyncio.get_event_loop().run_in_executor(None, partial)
@@ -170,7 +170,7 @@ class AudioSource(discord.PCMVolumeTransformer):
     # TODO: bulk AudioSource creation for playlists
 
     @staticmethod
-    def parse_duration(duration: int):
+    def parse_duration(duration: int) -> str:
         units = [
             ('days', 24 * 60 * 60),
             ('hours', 60 * 60),
