@@ -15,6 +15,7 @@ import yt_dlp as youtube_dl
 from async_timeout import timeout
 from discord.ext import commands
 
+import custom_context as cc
 import custom_errors as ce
 
 THIS_FOLDER = Path(__file__).parent
@@ -127,7 +128,24 @@ class AudioSource(discord.PCMVolumeTransformer):
         self.stream_url = source_data.get('url')
 
     @classmethod
-    async def create_source(cls, ctx: commands.Context, search: str, ytdl_options: dict = YTDL_OPTIONS, ffmpeg_options: dict = FFMPEG_OPTIONS, volume: float = 0.5) -> AudioSource:
+    async def create_source(cls, ctx: cc.CustomContext, search: str, ytdl_options: dict = YTDL_OPTIONS, ffmpeg_options: dict = FFMPEG_OPTIONS, volume: float = 0.5) -> AudioSource:
+        """Creates a AudioSource
+
+        Uses YoutubeDL to get the url of a song and pass it to the FFmpegPCMAudio to build an AudioSource (AudioSource is subclass of PCMVolumeTransformer)
+
+        Args:
+            ctx (cc.CustomContext): The command context
+            search (str): A URL or name to search
+            ytdl_options (dict, optional): Options to pass to YoutubeDL. Defaults to YTDL_OPTIONS.
+            ffmpeg_options (dict, optional): Options to pass to FFMPEG. Defaults to FFMPEG_OPTIONS.
+            volume (float, optional): The initial volume of the AudioSource. Defaults to 0.5.
+
+        Raises:
+            ce.YTDLError: When there is an error with YoutubeDL while trying to get the audio.
+
+        Returns:
+            AudioSource: An AudioSource object
+        """
         with youtube_dl.YoutubeDL(ytdl_options) as ytdl:
             partial = functools.partial(ytdl.extract_info, search, download=False, process=False)
             data = await asyncio.get_event_loop().run_in_executor(None, partial)
