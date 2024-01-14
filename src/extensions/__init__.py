@@ -11,7 +11,7 @@ THIS_FOLDER = Path(__file__).parent
 logger = logging.getLogger(__name__)
 
 
-def get_extensions_names():
+def get_extensions_names() -> list[str]:
     return [x.name for x in THIS_FOLDER.iterdir() if x.is_dir() and x.name != '__pycache__']
 
 

@@ -17,7 +17,7 @@ class ErrorHandler(commands.Cog):
 
     handle_error_method_name = '_handle_{error_name}'
 
-    def __init__(self, bot: by.BotYerak):
+    def __init__(self, bot: by.BotYerak) -> None:
         self.bot = bot
         self.ignored_errors = ()
 

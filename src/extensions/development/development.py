@@ -22,7 +22,7 @@ get_command_parameters = exts.get_command_parameters_builder(_commands_attribute
 class Development(commands.Cog, command_attrs=dict(hidden=True)):
     """Useful commands for developers"""
 
-    def __init__(self, bot: by.BotYerak):
+    def __init__(self, bot: by.BotYerak) -> None:
         self.bot = bot
         
     def cog_load(self) -> None:
