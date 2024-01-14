@@ -16,3 +16,7 @@ class VoiceError(commands.CommandError):
 
 class UnhandledError(commands.CommandError):
     pass
+
+
+class NoVoiceChannelError(commands.CheckFailure):
+    pass
