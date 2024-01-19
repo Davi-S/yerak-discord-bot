@@ -1,7 +1,7 @@
-from bot_yerak import BotYerak
+import bot_yerak as by
 
 from .development import Development
 
 
-async def setup(bot: BotYerak):
+async def setup(bot: by.BotYerak) -> None:
     await bot.add_cog(Development(bot))

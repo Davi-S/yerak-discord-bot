@@ -1,0 +1,54 @@
+{
+    "join": {
+        "help": "Makes the bot join your voice channel. You need to be in a voice channel.",
+        "brief": "Makes the bot join your voice channel."
+    },
+    "leave": {
+        "help": "Makes the bot disconnect from its voice channel.",
+        "brief": "Makes the bot leave its voice channel."
+    },
+    "play": {
+        "help": "Make the bot play the given song. If the bot is not connected to a voice channel, it will try to connect on yours before playing. If a song is being played, it will put the given song on a queue to be played latter.",
+        "brief": "Make the bot play the given song.",
+        "aliases": ["enqueue"],
+        "parameters": {
+            "search": {
+                "description": "The song to play. Can be a name or a URL. Only takes the first song of a playlist"
+            }
+        }
+    },
+    "pause": {
+        "help": "Pauses the current song if any is being played.",
+        "brief": "Pauses the current song."
+    },
+    "resume": {
+        "help": "Pauses the current song if the current song is paused.",
+        "brief": "Resume the current song."
+    },
+    "stop": {
+        "help": "Clear the queue and stops the current song",
+        "brief": "Stops the music bot"
+    },
+    "skip": {
+        "help": "Skips the current song and play the next one if any",
+        "brief": "Skips the current song"
+    },
+    "volume": {
+        "help": "Sets the bot volume. Minimum value is 0 and maximum value is 100. Must be and integer number",
+        "brief": "Sets the bot volume",
+        "parameters": {
+            "volume": {
+                "description": "The new volume of the bot"
+            }
+        }
+    },
+    "loop": {
+        "help": "Toggles the current song loop. You can specify a value to set the loop to (\"on\" or \"off\")",
+        "brief": "Toggles the current song loop",
+        "parameters": {
+            "value": {
+                "description": "The value of the loop. On or off"
+            }
+        }
+    }
+}

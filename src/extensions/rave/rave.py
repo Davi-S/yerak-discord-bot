@@ -8,8 +8,8 @@ from pathlib import Path
 import discord
 from discord.ext import commands, tasks
 
-from bot_yerak import BotYerak
-
+import bot_yerak as by
+import custom_context as cc
 import extensions as exts
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ _commands_attributes = exts.read_commands_attributes(THIS_FOLDER/'commands_attr.
 get_command_attributes = exts.get_command_attributes_builder(_commands_attributes)
 get_command_parameters = exts.get_command_parameters_builder(_commands_attributes)
 
-
+# TODO: check "discord.ext.commands.Greedy"
 class MemberListConverter(commands.Converter):
     async def convert(self, ctx, argument):
         members = []
@@ -38,7 +38,7 @@ class Rave(commands.GroupCog):
         Every rave has an 8 minutes timeout"""
     # TODO: do not let two raves at the same time
     # TODO: check how the rave behaves in different guilds
-    def __init__(self, bot: BotYerak) -> None:
+    def __init__(self, bot: by.BotYerak) -> None:
         self.bot = bot
         self.role_name = "Yerak's Raver"
         self.timeout = 480  # 480 seconds equals to 8 minutes
@@ -50,19 +50,19 @@ class Rave(commands.GroupCog):
         global _commands_attributes
         del _commands_attributes
 
-    @commands.hybrid_command(**get_command_attributes('pause'))
-    async def pause(self, ctx: commands.Context) -> None:
+    @commands.hybrid_command(**get_command_attributes('suspend'))
+    async def suspend(self, ctx: cc.CustomContext) -> None:
         self.stop_tasks()
-        await ctx.reply('Rave paused')
+        await ctx.reply('Rave suspended')
 
-    @commands.hybrid_command(**get_command_attributes('stop'))
-    async def stop(self, ctx: commands.Context) -> None:
+    @commands.hybrid_command(**get_command_attributes('quit'))
+    async def quit(self, ctx: cc.CustomContext) -> None:
         self.stop_tasks()
         await self.delete_roles(ctx.guild, all=True)
-        await ctx.reply('Rave stopped')
+        await ctx.reply('Rave quit')
 
     @commands.hybrid_command(**get_command_attributes('hue_cycle'))
-    async def hue_cycle(self, ctx: commands.Context,
+    async def hue_cycle(self, ctx: cc.CustomContext,
         step: float = commands.parameter(**get_command_parameters('hue_cycle', 'step')),
         speed: float = commands.parameter(**get_command_parameters('hue_cycle', 'speed')),
         *,
@@ -78,7 +78,7 @@ class Rave(commands.GroupCog):
         await ctx.reply('Hue Cycle rave started')
 
     @tasks.loop(seconds=1)
-    async def hue_cycle_task(self, ctx: commands.Context, role_id: int, step: float = 0.01):
+    async def hue_cycle_task(self, ctx: cc.CustomContext, role_id: int, step: float = 0.01):
         # get the role every time to get the latest color
         role = ctx.guild.get_role(role_id)
         role_color_hsv = colorsys.rgb_to_hsv(*[component / 255.0 for component in role.color.to_rgb()])
@@ -90,7 +90,7 @@ class Rave(commands.GroupCog):
         await role.edit(color=discord.Color.from_hsv(*new_color))
             
     @commands.hybrid_command(**get_command_attributes('crazy'))
-    async def crazy(self, ctx: commands.Context,
+    async def crazy(self, ctx: cc.CustomContext,
         amount: int = commands.parameter(**get_command_parameters('crazy', 'amount')),
         speed: float = commands.parameter(**get_command_parameters('crazy', 'speed')),
         *,
@@ -183,7 +183,7 @@ class Rave(commands.GroupCog):
         if isinstance(error, (AttributeError, discord.errors.NotFound)):
             pass
         else:
-            logger.error(f'Error on a task: {error}')
+            logger.exception(f'Error on a task: {error}')
             
     async def on_tasks_before_loop(self, _):
         # Because this function is not being set by a decorator, it receives two "self" arguments when called. Using the "_" to ignore the second "self" argument

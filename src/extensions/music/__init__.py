@@ -1,7 +1,7 @@
 import bot_yerak as by
 
-from .help_cog import Help
+from .music import Music
 
 
 async def setup(bot: by.BotYerak) -> None:
-    await bot.add_cog(Help(bot))
+    await bot.add_cog(Music(bot))

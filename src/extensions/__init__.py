@@ -10,8 +10,9 @@ THIS_FOLDER = Path(__file__).parent
 
 logger = logging.getLogger(__name__)
 
+# TODO: add docstring to these functions
 
-def get_extensions_names():
+def get_extensions_names() -> list[str]:
     return [x.name for x in THIS_FOLDER.iterdir() if x.is_dir() and x.name != '__pycache__']
 
 
@@ -55,6 +56,6 @@ async def manage_extensions(bot: commands.Bot, extensions: list[str], action: st
             logger.info(f'Extension "{extension}" {action}ed successfully')
         except commands.ExtensionError as error:
             fail.append((extension, error))
-            logger.error(f'Failed to {action} the extension "{extension}" due to error: {error}')
+            logger.exception(f'Failed to {action} the extension "{extension}" due to error: {error}')
 
     return {'success': success, 'fail': fail}
