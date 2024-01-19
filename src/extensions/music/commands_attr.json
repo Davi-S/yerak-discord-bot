@@ -24,5 +24,22 @@
     "resume": {
         "help": "Pauses the current song if the current song is paused.",
         "brief": "Resume the current song."
+    },
+    "stop": {
+        "help": "Clear the queue and stops the current song",
+        "brief": "Stops the music bot"
+    },
+    "skip": {
+        "help": "Skips the current song and play the next one if any",
+        "brief": "Skips the current song"
+    },
+    "volume": {
+        "help": "Sets the bot volume. Minimum value is 0 and maximum value is 100. Must be and integer number",
+        "brief": "Sets the bot volume",
+        "parameters": {
+            "volume": {
+                "description": "The new volume of the bot"
+            }
+        }
     }
 }
