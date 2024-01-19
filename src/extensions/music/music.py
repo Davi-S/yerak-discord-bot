@@ -62,7 +62,7 @@ def ensure_bot_paused() -> t.Callable[[cc.CustomContext], bool]:
 # ☑ resume
 # ☑ stop
 # ☑ skip
-# volume
+# ☑ volume
 # goto
 # lyrics
 # loop
@@ -194,5 +194,30 @@ class Music(commands.GroupCog):
     async def on_skip_error(self, ctx: cc.CustomContext, error: discord.DiscordException) -> None:
         if isinstance(error, commands.CheckFailure):
             await ctx.reply('The bot is not playing anything')
+        else:
+            raise error
+        
+    @commands.hybrid_command(**get_command_attributes('volume'))
+    @ensure_bot_playing()
+    async def volume(self, ctx: cc.CustomContext,
+        volume: int = commands.param(**get_command_parameters('volume', 'volume'))
+    ) -> None:
+        if volume < 0 or volume > 100:
+            raise ValueError('Volume must be between 0 and 100')
+        ctx.voice_client.volume = volume / 100
+        await ctx.reply(f'Volume set to {volume}')
+        
+    @volume.error
+    async def on_volume_error(self, ctx: cc.CustomContext, error: discord.DiscordException) -> None:
+        # sourcery skip: remove-unnecessary-else, swap-if-else-branches
+        if isinstance(error, commands.CheckFailure):
+            await ctx.reply('The bot is not playing anything')
+            return
+        if isinstance(error, commands.BadArgument):
+            await ctx.reply('The volume but be an integer number')
+            return
+        if error.original and isinstance(error.original, ValueError):
+            await ctx.reply('The volume must be between 0 and 100')
+            return
         else:
             raise error

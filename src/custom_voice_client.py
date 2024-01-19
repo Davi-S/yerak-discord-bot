@@ -60,8 +60,21 @@ class CustomVoiceClient(discord.VoiceClient):
         self._next = asyncio.Event()
         self._loop = False
         self._current_audio: AudioSource = None
+        self._volume = 0.5
 
         self.audio_player_task = self.client.loop.create_task(self.audio_player())
+        
+    @property
+    def volume(self):
+        return self._volume
+    
+    @volume.setter
+    def volume(self, value: float):
+        if 0 > value > 1:
+            raise ValueError('Volume must be between 0 and')
+        self._volume = value
+        # Apply the new volume to the current audio
+        self._current_audio.volume = self._volume
 
     async def audio_player(self) -> None:
         while True:
@@ -76,6 +89,7 @@ class CustomVoiceClient(discord.VoiceClient):
                     self.client.loop.create_task(self.disconnect())
                     return
 
+            self._current_audio.volume = self.volume
             self.play(self._current_audio, after=self.play_next)
             # TODO: call this function with right arguments
             # await self.on_play_callback()
