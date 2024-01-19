@@ -21,8 +21,6 @@ import custom_errors as ce
 THIS_FOLDER = Path(__file__).parent
 FFMPEG_PATH = THIS_FOLDER/'ffmpeg.exe'
 
-# TODO: FFMPEG_OPTIONS bellow were causing some issue. figure out why
-# TODO: put some good parameter here if needed
 FFMPEG_OPTIONS = {
     # 'executable': str(FFMPEG_PATH),
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
@@ -90,15 +88,6 @@ class CustomVoiceClient(discord.VoiceClient):
         
     async def _default_on_play_callback(self, *args, **kwargs) -> None:
         return
-
-    def stop(self) -> None:
-        self.queue.clear()
-        return super().stop()
-
-    async def disconnect(self, *, force: bool = False) -> None:
-        # TODO: check what happens if the queue is not cleared before disconnecting
-        self.queue.clear()
-        return await super().disconnect(force=force)
 
     def __del__(self) -> None:
         self.audio_player_task.cancel()

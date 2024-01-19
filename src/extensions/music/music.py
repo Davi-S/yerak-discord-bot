@@ -60,8 +60,8 @@ def ensure_bot_paused() -> t.Callable[[cc.CustomContext], bool]:
 # addplaylist
 # ☑ pause
 # ☑ resume
-# stop
-# skip
+# ☑ stop
+# ☑ skip
 # volume
 # goto
 # lyrics
@@ -101,6 +101,7 @@ class Music(commands.GroupCog):
     @ensure_bot_voice()
     async def leave(self, ctx: cc.CustomContext) -> None:
         channel_name = ctx.voice_client.channel.name
+        ctx.voice_client.queue.clear()
         await ctx.voice_client.disconnect()
         await ctx.reply(f'Disconnected from {channel_name}')
     
@@ -165,5 +166,33 @@ class Music(commands.GroupCog):
     async def on_resume_error(self, ctx: cc.CustomContext, error: discord.DiscordException) -> None:
         if isinstance(error, commands.CheckFailure):
             await ctx.reply('The bot is not paused')
+        else:
+            raise error
+    
+    @commands.hybrid_command(**get_command_attributes('stop'))
+    @ensure_bot_playing()
+    async def stop(self, ctx: cc.CustomContext) -> None:
+        ctx.voice_client.queue.clear()
+        ctx.voice_client.stop()
+        await ctx.reply('Queue cleared and music stopped')
+    
+    @stop.error
+    async def on_stop_error(self, ctx: cc.CustomContext, error: discord.DiscordException) -> None:
+        if isinstance(error, commands.CheckFailure):
+            await ctx.reply('The bot is not playing anything')
+        else:
+            raise error
+        
+    @commands.hybrid_command(**get_command_attributes('skip'))
+    @ensure_bot_playing()
+    async def skip(self, ctx: cc.CustomContext) -> None:
+        # Stopping the current song will trigger the "custom_voice_client.play_next" method, and play the next audio
+        ctx.voice_client.stop()
+        await ctx.reply('Skipped current music')
+        
+    @skip.error
+    async def on_skip_error(self, ctx: cc.CustomContext, error: discord.DiscordException) -> None:
+        if isinstance(error, commands.CheckFailure):
+            await ctx.reply('The bot is not playing anything')
         else:
             raise error
