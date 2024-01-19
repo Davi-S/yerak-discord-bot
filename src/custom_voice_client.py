@@ -57,8 +57,8 @@ class CustomVoiceClient(discord.VoiceClient):
 
         # TODO: attention to queue maxsize
         self.queue = AudioQueue(20)
+        self.looping = False
         self._next = asyncio.Event()
-        self._loop = False
         self._current_audio: AudioSource = None
         self._volume = 0.5
 
@@ -79,7 +79,7 @@ class CustomVoiceClient(discord.VoiceClient):
     async def audio_player(self) -> None:
         while True:
             self._next.clear()
-            if not self._loop:
+            if not self.looping:
                 # Try to get the next song within 3 minutes.
                 # If no song is added to the queue in time, the player will disconnect due to performance reasons.
                 try:

@@ -41,5 +41,14 @@
                 "description": "The new volume of the bot"
             }
         }
+    },
+    "loop": {
+        "help": "Toggles the current song loop. You can specify a value to set the loop to (\"on\" or \"off\")",
+        "brief": "Toggles the current song loop",
+        "parameters": {
+            "value": {
+                "description": "The value of the loop. On or off"
+            }
+        }
     }
 }

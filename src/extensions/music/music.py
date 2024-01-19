@@ -65,7 +65,7 @@ def ensure_bot_paused() -> t.Callable[[cc.CustomContext], bool]:
 # ☑ volume
 # goto
 # lyrics
-# loop
+# ☑ loop
 # nowplaying
 # queue
 # clear
@@ -200,7 +200,7 @@ class Music(commands.GroupCog):
     @commands.hybrid_command(**get_command_attributes('volume'))
     @ensure_bot_playing()
     async def volume(self, ctx: cc.CustomContext,
-        volume: int = commands.param(**get_command_parameters('volume', 'volume'))
+        volume: int = commands.parameter(**get_command_parameters('volume', 'volume'))
     ) -> None:
         volume = (max(0, min(volume, 100)))
         ctx.voice_client.volume = volume / 100
@@ -214,6 +214,23 @@ class Music(commands.GroupCog):
             return
         if isinstance(error, commands.BadArgument):
             await ctx.reply('The volume but be an integer number')
+            return
+        else:
+            raise error
+        
+    @commands.hybrid_command(**get_command_attributes('loop'))
+    @ensure_bot_playing()
+    async def loop(self, ctx: cc.CustomContext,
+        value: bool | None = commands.parameter(default=None, **get_command_parameters('loop', 'value'))
+    ) -> None:
+        ctx.voice_client.looping = not ctx.voice_client.looping if value is None else value
+        await ctx.reply(f'The audio loop is turned {"on" if ctx.voice_client.looping else "off"}')
+        
+    @loop.error
+    async def on_loop_error(self, ctx: cc.CustomContext, error: discord.DiscordException) -> None:
+        # sourcery skip: remove-unnecessary-else, swap-if-else-branches
+        if isinstance(error, commands.CheckFailure):
+            await ctx.reply('The bot is not playing anything')
             return
         else:
             raise error
