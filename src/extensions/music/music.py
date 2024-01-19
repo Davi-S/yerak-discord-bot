@@ -202,8 +202,7 @@ class Music(commands.GroupCog):
     async def volume(self, ctx: cc.CustomContext,
         volume: int = commands.param(**get_command_parameters('volume', 'volume'))
     ) -> None:
-        if volume < 0 or volume > 100:
-            raise ValueError('Volume must be between 0 and 100')
+        volume = (max(0, min(volume, 100)))
         ctx.voice_client.volume = volume / 100
         await ctx.reply(f'Volume set to {volume}')
         
@@ -215,9 +214,6 @@ class Music(commands.GroupCog):
             return
         if isinstance(error, commands.BadArgument):
             await ctx.reply('The volume but be an integer number')
-            return
-        if error.original and isinstance(error.original, ValueError):
-            await ctx.reply('The volume must be between 0 and 100')
             return
         else:
             raise error
