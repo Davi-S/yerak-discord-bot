@@ -8,7 +8,7 @@ from discord.ext import commands
 import bot_yerak as by
 import custom_context as cc
 import custom_errors as ce
-import custom_voice_client as vc
+import custom_voice_client as cvc
 import extensions as exts
 
 logger = logging.getLogger(__name__)
@@ -85,7 +85,7 @@ class Music(commands.GroupCog):
         if ctx.voice_client is None:
             # Attention to the custom class in the connect function.
             # This class is now the type of ctx.voice_client
-            await destination.connect(cls=vc.CustomVoiceClient)
+            await destination.connect(cls=cvc.CustomVoiceClient)
         else:
             await ctx.voice_client.move_to(destination)
         await ctx.reply(f'Joined channel {destination.name}')
@@ -236,7 +236,40 @@ class Music(commands.GroupCog):
             raise error
         
     @commands.hybrid_command(**get_command_attributes('clear'))
-    @ensure_bot_playing()
     async def clear(self, ctx: cc.CustomContext) -> None:
         ctx.voice_client.queue.clear() 
         await ctx.reply('Queue cleared')
+        
+    @commands.hybrid_command(**get_command_attributes('now_playing'))
+    @ensure_bot_playing()
+    async def now_playing(self, ctx: cc.CustomContext) -> None:
+        embed = self.create_embed(ctx.voice_client.current_audio)
+        await ctx.reply(embed=embed)
+        
+    @now_playing.error
+    async def on_now_playing_error(self, ctx: cc.CustomContext, error: discord.DiscordException) -> None:
+        # sourcery skip: remove-unnecessary-else, swap-if-else-branches
+        if isinstance(error, commands.CheckFailure):
+            await ctx.reply('The bot is not playing anything')
+            return
+        else:
+            raise error
+         
+    def create_embed(self, audio: cvc.AudioSource):
+        # TODO: make better url
+        return (
+            discord.Embed(
+                title='Now playing',
+                description=f'```\n{audio.title}\n```',
+                color=0x175639,
+            )
+            .add_field(name='Duration', value=audio.duration, inline=False)
+            .add_field(name='Requested by', value=audio.requester.mention, inline=False)
+            .add_field(
+                name='Uploader',
+                value=f'[{audio.uploader}]({audio.uploader_url})',
+                inline=False
+            )
+            .add_field(name='URL', value=f'[Click]({audio.url})'.format(self), inline=False)
+            .set_thumbnail(url=audio.thumbnail)
+        )

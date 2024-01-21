@@ -66,6 +66,10 @@ class CustomVoiceClient(discord.VoiceClient):
         self.audio_player_task = self.client.loop.create_task(self.audio_player())
         
     @property
+    def current_audio(self):
+        return self._current_audio
+        
+    @property
     def volume(self):
         return self._volume
     
