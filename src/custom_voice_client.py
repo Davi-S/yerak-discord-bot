@@ -47,7 +47,6 @@ class CustomVoiceClient(discord.VoiceClient):
     ) -> None:
         super().__init__(client, channel)
 
-        self.timeout = timeout
         if on_play_callback is None:
             on_play_callback = self._default_on_play_callback
         if on_play_callback_kwargs is None:
@@ -58,11 +57,17 @@ class CustomVoiceClient(discord.VoiceClient):
         # TODO: attention to queue maxsize
         self.queue = AudioQueue(20)
         self.looping = False
+        self.timeout = timeout
+        
         self._next = asyncio.Event()
         self._current_audio: AudioSource = None
         self._volume = 0.5
 
         self.audio_player_task = self.client.loop.create_task(self.audio_player())
+        
+    @property
+    def current_audio(self):
+        return self._current_audio
         
     @property
     def volume(self):
