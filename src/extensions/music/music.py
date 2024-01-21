@@ -256,7 +256,7 @@ class Music(commands.GroupCog):
             raise error
          
     def create_embed(self, audio: cvc.AudioSource):
-        # TODO: make better url
+        # TODO: make better embed
         return (
             discord.Embed(
                 title='Now playing',
