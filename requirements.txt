@@ -23,4 +23,4 @@ urllib3==2.1.0
 websockets==12.0
 yarl==1.9.4
 youtube-dl==2021.12.17
-yt-dlp @ https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz#sha256=ce95bb65b54d83268ee302b17fc3767c8b0c997cb02ebda773939c449935cb63
+yt-dlp
