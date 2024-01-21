@@ -42,17 +42,13 @@ YTDL_OPTIONS = {
 class CustomVoiceClient(discord.VoiceClient):
     def __init__(self, client, channel,
             timeout: int = 180,
-            on_play_callback: t.Callable[[t.Any, t.Any], t.Awaitable[t.Any]] = None,
-            on_play_callback_kwargs: dict = None
+            on_play_callback: t.Callable[[], t.Awaitable[t.Any]] = None,
     ) -> None:
         super().__init__(client, channel)
 
         if on_play_callback is None:
             on_play_callback = self._default_on_play_callback
-        if on_play_callback_kwargs is None:
-            on_play_callback_kwargs = {}
         self.on_play_callback = on_play_callback
-        self.on_play_callback_kwargs = on_play_callback_kwargs
 
         # TODO: attention to queue maxsize
         self.queue = AudioQueue(20)
@@ -96,8 +92,7 @@ class CustomVoiceClient(discord.VoiceClient):
 
             self._current_audio.volume = self.volume
             self.play(self._current_audio, after=self.play_next)
-            # TODO: call this function with right arguments
-            # await self.on_play_callback()
+            await self.on_play_callback()
             await self._next.wait()
 
     def play_next(self, error=None) -> None:
@@ -105,7 +100,7 @@ class CustomVoiceClient(discord.VoiceClient):
             raise ce.VoiceError(str(error))
         self._next.set()
         
-    async def _default_on_play_callback(self, *args, **kwargs) -> None:
+    async def _default_on_play_callback(self) -> None:
         return
 
     def __del__(self) -> None:
@@ -219,9 +214,8 @@ class AudioQueue(asyncio.Queue[AudioSource]):
     #######################
     ### ATTENTION BELOW ###
     #######################
-    # Carefully overwriting this method to use async _put
-    # Only changing feel lines to include "await" keyword
-    async def put(self, item):
+    # Carefully overwriting these methods
+    async def put(self, item) -> AudioSource:
         """Put an item into the queue.
 
         Put an item into the queue. If the queue is full, wait until a free
@@ -242,32 +236,35 @@ class AudioQueue(asyncio.Queue[AudioSource]):
         # Calling here with "await" keyword
         return await self.put_nowait(item)
 
-    async def put_nowait(self, item):
+    async def put_nowait(self, item) -> AudioSource:
         """Put an item into the queue without blocking.
 
         If no free slot is immediately available, raise QueueFull.
         """
         if self.full():
             raise QueueFull
-        # calling here with "await" keyword
-        await self._put(item)
+        # calling here with "await" keyword and get the return value of "_put" to return
+        item = await self._put(item)
         self._unfinished_tasks += 1
         self._finished.clear()
         self._wakeup_next(self._getters)
+        # Returning the "_put" value
+        return item
     #######################
     ### ATTENTION ABOVE ###
     #######################
 
-    async def _put(self, item: AudioSource | tuple[commands.Context, str]) -> None:
+    async def _put(self, item: AudioSource | tuple[commands.Context, str]) -> AudioSource:
         if isinstance(item, AudioSource):
             self._queue.append(item)
-            return
+            r = item
         if isinstance(item, tuple) and isinstance(item[0], commands.Context) and isinstance(item[1], str):
             source = await AudioSource.create_source(item[0], item[1])
             self._queue.append(source)
-            return
-        raise TypeError(f'Cannot store type {type(item)} in this queue')
-
+            r = source
+        else:
+            raise TypeError(f'Cannot store type {type(item)} in this queue')
+        return r
     def clear(self) -> None:
         self._queue.clear()
 
