@@ -42,17 +42,13 @@ YTDL_OPTIONS = {
 class CustomVoiceClient(discord.VoiceClient):
     def __init__(self, client, channel,
             timeout: int = 180,
-            on_play_callback: t.Callable[[t.Any, t.Any], t.Awaitable[t.Any]] = None,
-            on_play_callback_kwargs: dict = None
+            on_play_callback: t.Callable[[], t.Awaitable[t.Any]] = None,
     ) -> None:
         super().__init__(client, channel)
 
         if on_play_callback is None:
             on_play_callback = self._default_on_play_callback
-        if on_play_callback_kwargs is None:
-            on_play_callback_kwargs = {}
         self.on_play_callback = on_play_callback
-        self.on_play_callback_kwargs = on_play_callback_kwargs
 
         # TODO: attention to queue maxsize
         self.queue = AudioQueue(20)
@@ -96,7 +92,7 @@ class CustomVoiceClient(discord.VoiceClient):
 
             self._current_audio.volume = self.volume
             self.play(self._current_audio, after=self.play_next)
-            await self.on_play_callback(**self.on_play_callback_kwargs)
+            await self.on_play_callback()
             await self._next.wait()
 
     def play_next(self, error=None) -> None:
@@ -104,7 +100,7 @@ class CustomVoiceClient(discord.VoiceClient):
             raise ce.VoiceError(str(error))
         self._next.set()
         
-    async def _default_on_play_callback(self, *args, **kwargs) -> None:
+    async def _default_on_play_callback(self) -> None:
         return
 
     def __del__(self) -> None:

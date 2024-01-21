@@ -1,3 +1,4 @@
+import functools
 import logging
 import typing as t
 from pathlib import Path
@@ -89,8 +90,7 @@ class Music(commands.GroupCog):
                     client,
                     connectable,
                     timeout=180,
-                    on_play_callback=self.__now_playing,
-                    on_play_callback_kwargs={'ctx': ctx}
+                    on_play_callback=functools.partial(self.__now_playing, ctx),
                 )
             )
         else:
