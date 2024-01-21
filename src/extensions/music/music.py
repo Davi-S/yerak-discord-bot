@@ -57,7 +57,7 @@ def ensure_bot_paused() -> t.Callable[[cc.CustomContext], bool]:
 # ☑ enter
 # ☑ leave
 # ☑ play/enqueue
-# addplaylist
+# add_playlist
 # ☑ pause
 # ☑ resume
 # ☑ stop
@@ -66,7 +66,7 @@ def ensure_bot_paused() -> t.Callable[[cc.CustomContext], bool]:
 # goto
 # lyrics
 # ☑ loop
-# nowplaying
+# now_playing
 # queue
 # clear
 # shuffle
@@ -234,3 +234,9 @@ class Music(commands.GroupCog):
             return
         else:
             raise error
+        
+    @commands.hybrid_command(**get_command_attributes('clear'))
+    @ensure_bot_playing()
+    async def clear(self, ctx: cc.CustomContext) -> None:
+        ctx.voice_client.queue.clear() 
+        await ctx.reply('Queue cleared')
