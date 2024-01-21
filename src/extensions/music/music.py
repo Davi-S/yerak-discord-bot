@@ -126,9 +126,8 @@ class Music(commands.GroupCog):
     ) -> None:
         async with ctx.typing():
             # Put the audio in the queue. If this is the only audio in the queue, it will start automatically
-            await ctx.voice_client.queue.put((ctx, search))
-        # TODO: get the audio that was just added to show its title
-        await ctx.reply(f'Enqueued {search}')
+            source = await ctx.voice_client.queue.put((ctx, search))
+        await ctx.reply(f'Enqueued "{source.title}"')
         
     @play.error
     async def on_play_error(self, ctx: cc.CustomContext, error: discord.DiscordException) -> None:
