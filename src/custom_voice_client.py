@@ -96,8 +96,7 @@ class CustomVoiceClient(discord.VoiceClient):
 
             self._current_audio.volume = self.volume
             self.play(self._current_audio, after=self.play_next)
-            # TODO: call this function with right arguments
-            # await self.on_play_callback()
+            await self.on_play_callback(**self.on_play_callback_kwargs)
             await self._next.wait()
 
     def play_next(self, error=None) -> None:

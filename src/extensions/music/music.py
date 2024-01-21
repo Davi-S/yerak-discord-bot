@@ -53,7 +53,6 @@ def ensure_bot_paused() -> t.Callable[[cc.CustomContext], bool]:
 
 
 # TODO: there is a logging error some times
-# TODO: COMMANDS
 # ☑ enter
 # ☑ leave
 # ☑ play/enqueue
@@ -85,7 +84,15 @@ class Music(commands.GroupCog):
         if ctx.voice_client is None:
             # Attention to the custom class in the connect function.
             # This class is now the type of ctx.voice_client
-            await destination.connect(cls=cvc.CustomVoiceClient)
+            await destination.connect(
+                cls=lambda client, connectable: cvc.CustomVoiceClient(
+                    client,
+                    connectable,
+                    timeout=180,
+                    on_play_callback=self.__now_playing,
+                    on_play_callback_kwargs={'ctx': ctx}
+                )
+            )
         else:
             await ctx.voice_client.move_to(destination)
         await ctx.reply(f'Joined channel {destination.name}')
@@ -240,11 +247,14 @@ class Music(commands.GroupCog):
         ctx.voice_client.queue.clear() 
         await ctx.reply('Queue cleared')
         
+    async def __now_playing(self, ctx: cc.CustomContext):
+        embed = self.create_embed(ctx.voice_client.current_audio)
+        await ctx.reply(embed=embed)
+        
     @commands.hybrid_command(**get_command_attributes('now_playing'))
     @ensure_bot_playing()
     async def now_playing(self, ctx: cc.CustomContext) -> None:
-        embed = self.create_embed(ctx.voice_client.current_audio)
-        await ctx.reply(embed=embed)
+        await self.__now_playing(ctx)
         
     @now_playing.error
     async def on_now_playing_error(self, ctx: cc.CustomContext, error: discord.DiscordException) -> None:
