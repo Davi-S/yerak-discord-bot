@@ -66,9 +66,9 @@ def ensure_bot_paused() -> t.Callable[[cc.CustomContext], bool]:
 # goto
 # lyrics
 # ☑ loop
-# now_playing
+# ☑ now_playing
 # queue
-# clear
+# ☑ clear
 # shuffle
 # delete
 
